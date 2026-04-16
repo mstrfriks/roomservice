@@ -126,16 +126,7 @@
       flex: 1;
       display: flex; flex-direction: column;
       align-items: center; justify-content: center;
-      gap: 1.8vh; padding-bottom: 20px;
-    }
-
-    .welcome-device-label {
-      font-size: clamp(11px, 1.2vmin, 13px);
-      font-weight: 700;
-      letter-spacing: 0.22em;
-      text-transform: uppercase;
-      color: var(--accent);
-      text-indent: 0.22em;
+      gap: 1.2vh; padding-bottom: 20px;
     }
 
     .welcome-device-room {
@@ -384,6 +375,58 @@
 
     .order-body { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 20px 20px 0; }
     .order-content { width: min(100%, 600px); margin: 0 auto; }
+    .service-callout {
+      margin-bottom: 18px;
+      padding: 18px;
+      border-radius: 22px;
+      background:
+        radial-gradient(circle at top left, rgba(215,177,97,.24), transparent 45%),
+        linear-gradient(135deg, #fff8eb, #f5e4be);
+      border: 1px solid rgba(117,90,38,.14);
+      box-shadow: 0 12px 28px rgba(117,90,38,.12);
+    }
+    .service-callout-label {
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 8px;
+    }
+    .service-callout-copy {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 24px;
+      font-weight: 700;
+      line-height: 1.05;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+    .service-callout-note {
+      font-size: 14px;
+      line-height: 1.45;
+      color: var(--muted);
+      margin-bottom: 14px;
+    }
+    .btn-housekeeper {
+      width: 100%;
+      min-height: 58px;
+      border: none;
+      border-radius: 18px;
+      cursor: pointer;
+      color: #fff;
+      background: linear-gradient(135deg, #8d1f1f, #c24d3d);
+      box-shadow: 0 14px 30px rgba(141,31,31,.24);
+      font-size: 17px;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      transition: transform .12s, opacity .15s, box-shadow .15s;
+    }
+    .btn-housekeeper:active:not(:disabled) { transform: scale(.98); }
+    .btn-housekeeper:disabled {
+      opacity: .55;
+      cursor: default;
+      box-shadow: none;
+    }
     .section-label {
       font-size: 10px; font-weight: 600; letter-spacing: 1.5px;
       text-transform: uppercase; color: var(--muted); margin-bottom: 16px;
@@ -569,9 +612,8 @@
     <p class="welcome-subtitle">Room Service</p>
   </div>
   <div class="welcome-actions">
-    <p class="welcome-device-label" id="welcome-device-label">Client Screen</p>
-    <p class="welcome-device-room" id="welcome-device-room"></p>
     <button class="btn-order" id="btn-primary-action">Order now</button>
+    <p class="welcome-device-room" id="welcome-device-room"></p>
 
     <button class="btn-demo" id="btn-demo">Demo</button>
   </div>
@@ -602,6 +644,12 @@
   </div>
   <div class="order-body">
     <div class="order-content">
+      <div class="service-callout">
+        <p class="service-callout-label">Assistance</p>
+        <p class="service-callout-copy">Faire venir l’intendante</p>
+        <p class="service-callout-note">Si vous souhaitez être vu rapidement, utilisez ce bouton dédié.</p>
+        <button id="housekeeper-btn" class="btn-housekeeper">Appeler l’intendante</button>
+      </div>
       <p class="section-label">What would you like?</p>
       <div class="drinks-grid" id="drinks-grid"></div>
     </div>
@@ -721,9 +769,9 @@ const connDot       = document.getElementById('conn-dot');
 const watermark     = document.getElementById('welcome-watermark');
 const noteField     = document.getElementById('note-field');
 const primaryActionBtn = document.getElementById('btn-primary-action');
-const welcomeDeviceLabel = document.getElementById('welcome-device-label');
 const welcomeDeviceRoom = document.getElementById('welcome-device-room');
 const demoBtn = document.getElementById('btn-demo');
+const housekeeperBtn = document.getElementById('housekeeper-btn');
 const deviceSettingsOverlay = document.getElementById('device-settings-overlay');
 const deviceRoomSelect = document.getElementById('device-room-select');
 const deviceSettingsHint = document.getElementById('device-settings-hint');
@@ -782,16 +830,15 @@ function refreshWelcomeState() {
   const assignedRoom = getAssignedRoom();
   const isClient = deviceSettings.mode !== 'service';
 
-  welcomeDeviceLabel.textContent = isClient ? 'Client Screen' : 'Service Screen';
   primaryActionBtn.textContent = isClient ? 'Order now' : 'Open dashboard';
   demoBtn.style.display = isClient ? '' : 'none';
 
   if (isClient) {
     welcomeDeviceRoom.textContent = assignedRoom
-      ? `Dedicated room: ${assignedRoom.icon} ${assignedRoom.label}`
+      ? assignedRoom.label
       : 'Choose a dedicated room in settings before taking orders.';
   } else {
-    welcomeDeviceRoom.textContent = 'This iPad is reserved for the service team.';
+    welcomeDeviceRoom.textContent = '';
   }
 }
 
@@ -911,6 +958,7 @@ function updateOrderBtn() {
   const total = [...drinkQty.values()].reduce((a,b)=>a+b, 0);
   const connected = demoMode || connDot.classList.contains('ok');
   orderBtn.disabled = total === 0 || !connected;
+  housekeeperBtn.disabled = !connected;
   orderBtn.textContent = total > 0
     ? `Order · ${total} drink${total > 1 ? 's' : ''}`
     : 'Choose a drink';
@@ -1013,6 +1061,27 @@ orderBtn.addEventListener('click', () => {
   if (!items.length) return;
   ws.send(JSON.stringify({ type:'order', name:myRoom, drink:items.join(', '), note: noteField.value.trim() }));
   orderBtn.disabled = true;
+});
+
+housekeeperBtn.addEventListener('click', () => {
+  if (!myRoom) return;
+  if (demoMode) {
+    housekeeperBtn.disabled = true;
+    housekeeperBtn.textContent = 'Intendante prévenue';
+    setTimeout(() => {
+      housekeeperBtn.textContent = 'Appeler l’intendante';
+      updateOrderBtn();
+    }, 2200);
+    return;
+  }
+  if (!ws || ws.readyState !== WebSocket.OPEN) return;
+  ws.send(JSON.stringify({ type: 'housekeeper_request', name: myRoom }));
+  housekeeperBtn.disabled = true;
+  housekeeperBtn.textContent = 'Intendante prévenue';
+  setTimeout(() => {
+    housekeeperBtn.textContent = 'Appeler l’intendante';
+    updateOrderBtn();
+  }, 2200);
 });
 
 document.getElementById('dismiss-ready').addEventListener('click', () => {

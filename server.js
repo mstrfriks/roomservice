@@ -27,15 +27,16 @@ const APP_URL    = process.env.RENDER_EXTERNAL_URL || '';
 
 function notifyService(order) {
   if (!NTFY_TOPIC) return;
+  const isHousekeeperRequest = order.kind === 'housekeeper_request';
   fetch(`https://ntfy.sh/${NTFY_TOPIC}`, {
     method: 'POST',
     headers: {
-      'Title':   `Cafe - ${order.name}`,
+      'Title':   isHousekeeperRequest ? `Intendante - ${order.name}` : `Cafe - ${order.name}`,
       'Priority':'high',
-      'Tags':    'coffee',
+      'Tags':    isHousekeeperRequest ? 'bell' : 'coffee',
       'Actions': `view, Ouvrir le dashboard, ${APP_URL}/service`,
     },
-    body: order.drink,
+    body: isHousekeeperRequest ? 'Une personne demande à voir l’intendante.' : order.drink,
   })
   .then(r => console.log('ntfy response:', r.status))
   .catch(e => console.error('ntfy error:', e.message));
@@ -73,11 +74,30 @@ wss.on('connection', (ws) => {
       const drink = String(msg.drink || '').trim().slice(0, 200);
       if (!name || !drink) return;
       const note  = String(msg.note  || '').trim().slice(0, 200);
-      const order = { id: nextId++, name, drink, note, at: Date.now(), status: 'pending' };
+      const order = { id: nextId++, name, drink, note, at: Date.now(), status: 'pending', kind: 'order' };
       orders.push(order);
       if (orders.length > 500) orders.splice(0, orders.length - 500);
       broadcast('service', { type: 'new_order', order });
       send(ws, { type: 'order_confirmed', orderId: order.id });
+      notifyService(order);
+      return;
+    }
+
+    if (msg.type === 'housekeeper_request') {
+      const name = String(msg.name || '').trim().slice(0, 50);
+      if (!name) return;
+      const order = {
+        id: nextId++,
+        name,
+        drink: 'Demande intendante',
+        note: 'La personne souhaite voir l’intendante.',
+        at: Date.now(),
+        status: 'pending',
+        kind: 'housekeeper_request',
+      };
+      orders.push(order);
+      if (orders.length > 500) orders.splice(0, orders.length - 500);
+      broadcast('service', { type: 'new_order', order });
       notifyService(order);
       return;
     }

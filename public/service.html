@@ -102,6 +102,13 @@
       transition:opacity .25s, transform .25s;
       box-shadow:0 2px 20px rgba(0,0,0,.06);
     }
+    .order-card.housekeeper-request {
+      background:
+        radial-gradient(circle at top left, rgba(194,77,61,.18), transparent 45%),
+        linear-gradient(135deg, #fff7f4, #fff1ec);
+      border: 1px solid rgba(194,77,61,.18);
+      box-shadow: 0 12px 28px rgba(194,77,61,.14);
+    }
     @keyframes slideIn { from{opacity:0;transform:translateY(-12px) scale(.97);} to{opacity:1;transform:none;} }
     .order-card.removing { opacity:0; transform:scale(.95); pointer-events:none; }
 
@@ -120,6 +127,19 @@
       font-size:13px; font-style:italic; color:var(--muted); margin-top:3px;
     }
     .order-time { font-size:12px; color:var(--muted); margin-top:4px; letter-spacing:.3px; }
+    .order-pill {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      padding: 5px 10px;
+      margin-bottom: 8px;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      background: rgba(194,77,61,.12);
+      color: #8d1f1f;
+    }
 
     .ready-btn {
       background:linear-gradient(135deg,#755a26,#af8f55); color:#fff; border:none;
@@ -127,6 +147,9 @@
       font-size:14px; font-weight:700; cursor:pointer;
       white-space:nowrap; flex-shrink:0; margin-top:2px;
       transition:transform .1s;
+    }
+    .order-card.housekeeper-request .ready-btn {
+      background: linear-gradient(135deg, #8d1f1f, #c24d3d);
     }
     .ready-btn:active { transform:scale(.93); }
 
@@ -534,17 +557,20 @@ function timeLabel(ts){const s=Math.round((Date.now()-ts)/1000);return s<60?`${s
 
 function addOrder(order) {
   if(ordersMap.has(order.id))return;
-  const card=document.createElement('div'); card.className='order-card';
+  const isHousekeeperRequest = order.kind === 'housekeeper_request';
+  const card=document.createElement('div'); card.className=`order-card${isHousekeeperRequest ? ' housekeeper-request' : ''}`;
   const noteHtml = order.note ? `<div class="order-note">${escHtml(order.note)}</div>` : '';
+  const pillHtml = isHousekeeperRequest ? '<div class="order-pill">Intendante demandée</div>' : '';
   card.innerHTML=`
-    <span class="drink-icon">${emojiFor(order.drink)}</span>
+    <span class="drink-icon">${isHousekeeperRequest ? '🔔' : emojiFor(order.drink)}</span>
     <div class="order-info">
       <div class="order-room">${escHtml(order.name)}</div>
+      ${pillHtml}
       <div class="order-drink">${escHtml(order.drink)}</div>
       ${noteHtml}
       <div class="order-time" data-ts="${order.at}">${timeLabel(order.at)}</div>
     </div>
-    <button class="ready-btn">Ready ✓</button>
+    <button class="ready-btn">${isHousekeeperRequest ? 'Pris en charge' : 'Ready ✓'}</button>
   `;
   card.querySelector('.ready-btn').addEventListener('click',()=>markReady(order.id));
   orderList.prepend(card); ordersMap.set(order.id,card); updateBadge();
