@@ -54,7 +54,28 @@
     #screen-welcome {
       background: var(--bg);
       align-items: center;
+      position: relative;
     }
+
+    .welcome-settings {
+      position: absolute;
+      top: 18px;
+      right: 18px;
+      z-index: 2;
+    }
+
+    .welcome-settings-btn {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.86);
+      color: var(--text);
+      font-size: 18px;
+      cursor: pointer;
+      box-shadow: 0 4px 20px rgba(0,0,0,.06);
+    }
+    .welcome-settings-btn:active { opacity: .7; }
 
     /* Top spacer */
     .welcome-spacer { flex: 1; }
@@ -108,6 +129,24 @@
       gap: 1.8vh; padding-bottom: 20px;
     }
 
+    .welcome-device-label {
+      font-size: clamp(11px, 1.2vmin, 13px);
+      font-weight: 700;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--accent);
+      text-indent: 0.22em;
+    }
+
+    .welcome-device-room {
+      max-width: 320px;
+      text-align: center;
+      font-size: clamp(12px, 1.3vmin, 14px);
+      color: var(--muted);
+      line-height: 1.45;
+      min-height: 2.9em;
+    }
+
     .btn-order {
       font-family: -apple-system, BlinkMacSystemFont, sans-serif;
       font-size: clamp(15px, 1.8vmin, 18px);
@@ -140,6 +179,136 @@
       color: var(--muted); opacity: 0.35;
     }
     .btn-demo:active { opacity: .2; }
+
+    #device-settings-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 300;
+      background: rgba(28,20,14,.28);
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    #device-settings-overlay.open { display: flex; }
+
+    .device-settings-card {
+      width: min(100%, 460px);
+      background: var(--card);
+      border-radius: 22px;
+      padding: 24px;
+      box-shadow: 0 20px 60px rgba(0,0,0,.16);
+      animation: popIn .2s ease;
+    }
+
+    .device-settings-title {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .device-settings-copy {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.45;
+      margin-bottom: 20px;
+    }
+
+    .device-settings-section {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+
+    .device-settings-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .mode-options {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .mode-option {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      padding: 14px;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      cursor: pointer;
+    }
+
+    .mode-option input {
+      accent-color: var(--accent);
+    }
+
+    .mode-option-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .mode-option-copy {
+      font-size: 12px;
+      line-height: 1.4;
+      color: var(--muted);
+    }
+
+    .device-select {
+      width: 100%;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      font-size: 15px;
+      padding: 14px 16px;
+      outline: none;
+    }
+    .device-select:disabled {
+      opacity: .45;
+    }
+
+    .device-settings-hint {
+      font-size: 12px;
+      line-height: 1.45;
+      color: var(--muted);
+    }
+
+    .device-settings-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 24px;
+    }
+
+    .device-btn-secondary,
+    .device-btn-primary {
+      border: none;
+      border-radius: 999px;
+      padding: 12px 18px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .device-btn-secondary {
+      background: var(--surface);
+      color: var(--muted);
+    }
+
+    .device-btn-primary {
+      background: linear-gradient(135deg, #755a26, #af8f55);
+      color: #fff;
+    }
 
     /* ── GLASS HEADER (RoomSelectionView / OrderView) ── */
     .glass-header {
@@ -389,6 +558,9 @@
 
 <!-- WELCOME -->
 <div id="screen-welcome" class="screen active">
+  <div class="welcome-settings">
+    <button class="welcome-settings-btn" id="btn-device-settings" aria-label="Device settings">⚙️</button>
+  </div>
   <div class="welcome-spacer"></div>
 
   <div class="welcome-hero">
@@ -397,16 +569,9 @@
     <p class="welcome-subtitle">Room Service</p>
   </div>
   <div class="welcome-actions">
-    <button class="btn-order" id="btn-order-now">Order now</button>
-
-    <button class="btn-service" id="btn-service-dash">
-      <svg viewBox="0 0 20 20" fill="currentColor">
-        <rect x="2" y="3" width="16" height="3" rx="1.5"/>
-        <rect x="2" y="8.5" width="16" height="3" rx="1.5"/>
-        <rect x="2" y="14" width="16" height="3" rx="1.5"/>
-      </svg>
-      Service Dashboard
-    </button>
+    <p class="welcome-device-label" id="welcome-device-label">Client Screen</p>
+    <p class="welcome-device-room" id="welcome-device-room"></p>
+    <button class="btn-order" id="btn-primary-action">Order now</button>
 
     <button class="btn-demo" id="btn-demo">Demo</button>
   </div>
@@ -468,6 +633,40 @@
   </div>
 </div>
 
+<div id="device-settings-overlay">
+  <div class="device-settings-card">
+    <h2 class="device-settings-title">Device settings</h2>
+    <p class="device-settings-copy">Choose whether this iPad is dedicated to guests or to the service team.</p>
+
+    <div class="device-settings-section">
+      <p class="device-settings-label">Screen type</p>
+      <div class="mode-options">
+        <label class="mode-option">
+          <input type="radio" name="device-mode" value="client">
+          <span class="mode-option-title">Client screen</span>
+          <span class="mode-option-copy">Orders are sent for one assigned room only.</span>
+        </label>
+        <label class="mode-option">
+          <input type="radio" name="device-mode" value="service">
+          <span class="mode-option-title">Service screen</span>
+          <span class="mode-option-copy">The home screen opens the service dashboard.</span>
+        </label>
+      </div>
+    </div>
+
+    <div class="device-settings-section">
+      <label class="device-settings-label" for="device-room-select">Dedicated room</label>
+      <select class="device-select" id="device-room-select"></select>
+      <p class="device-settings-hint" id="device-settings-hint"></p>
+    </div>
+
+    <div class="device-settings-actions">
+      <button class="device-btn-secondary" id="device-settings-cancel" type="button">Cancel</button>
+      <button class="device-btn-primary" id="device-settings-save" type="button">Save</button>
+    </div>
+  </div>
+</div>
+
 <script>
 'use strict';
 
@@ -501,12 +700,14 @@ const DEFAULT_CONFIG = {
 };
 
 let config = DEFAULT_CONFIG;
+const DEFAULT_DEVICE_SETTINGS = { mode: 'client', roomId: '' };
 let myRoom     = '';
 let myRoomIcon = '';
 const drinkQty = new Map();
 let pendingOrderId = null;
 let demoMode       = false;
 let ws, reconnectDelay = 1000;
+let deviceSettings = loadDeviceSettings();
 
 const screenWelcome = document.getElementById('screen-welcome');
 const screenRoom    = document.getElementById('screen-room');
@@ -519,6 +720,26 @@ const readyOverlay  = document.getElementById('ready-overlay');
 const connDot       = document.getElementById('conn-dot');
 const watermark     = document.getElementById('welcome-watermark');
 const noteField     = document.getElementById('note-field');
+const primaryActionBtn = document.getElementById('btn-primary-action');
+const welcomeDeviceLabel = document.getElementById('welcome-device-label');
+const welcomeDeviceRoom = document.getElementById('welcome-device-room');
+const demoBtn = document.getElementById('btn-demo');
+const deviceSettingsOverlay = document.getElementById('device-settings-overlay');
+const deviceRoomSelect = document.getElementById('device-room-select');
+const deviceSettingsHint = document.getElementById('device-settings-hint');
+
+function loadDeviceSettings() {
+  try {
+    const raw = localStorage.getItem('rs_device_settings');
+    if (raw) return { ...DEFAULT_DEVICE_SETTINGS, ...JSON.parse(raw) };
+  } catch {}
+  return { ...DEFAULT_DEVICE_SETTINGS };
+}
+
+function saveDeviceSettings(nextSettings) {
+  deviceSettings = { ...DEFAULT_DEVICE_SETTINGS, ...nextSettings };
+  localStorage.setItem('rs_device_settings', JSON.stringify(deviceSettings));
+}
 
 function esc(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -528,6 +749,82 @@ function showScreen(el) {
   [screenWelcome, screenRoom, screenOrder, screenConfirm].forEach(s => s.classList.remove('active'));
   el.classList.add('active');
   el.style.animation = 'none'; void el.offsetWidth; el.style.animation = 'fadeIn .25s ease';
+}
+
+function getAvailableRooms() {
+  return (config.rooms || []).filter(room => room.available !== false);
+}
+
+function getAssignedRoom() {
+  return (config.rooms || []).find(room => room.id === deviceSettings.roomId && room.available !== false) || null;
+}
+
+function getActiveRoom() {
+  const assignedRoom = getAssignedRoom();
+  if (assignedRoom) return assignedRoom;
+  if (demoMode) return getAvailableRooms()[0] || null;
+  return null;
+}
+
+function ensureValidDedicatedRoom() {
+  const availableRooms = getAvailableRooms();
+  if (deviceSettings.mode !== 'client') return;
+  if (!availableRooms.length) {
+    if (deviceSettings.roomId) saveDeviceSettings({ ...deviceSettings, roomId: '' });
+    return;
+  }
+  if (!getAssignedRoom()) {
+    saveDeviceSettings({ ...deviceSettings, roomId: availableRooms[0].id });
+  }
+}
+
+function refreshWelcomeState() {
+  const assignedRoom = getAssignedRoom();
+  const isClient = deviceSettings.mode !== 'service';
+
+  welcomeDeviceLabel.textContent = isClient ? 'Client Screen' : 'Service Screen';
+  primaryActionBtn.textContent = isClient ? 'Order now' : 'Open dashboard';
+  demoBtn.style.display = isClient ? '' : 'none';
+
+  if (isClient) {
+    welcomeDeviceRoom.textContent = assignedRoom
+      ? `Dedicated room: ${assignedRoom.icon} ${assignedRoom.label}`
+      : 'Choose a dedicated room in settings before taking orders.';
+  } else {
+    welcomeDeviceRoom.textContent = 'This iPad is reserved for the service team.';
+  }
+}
+
+function renderDeviceSettings(modeOverride) {
+  const checkedMode = document.querySelector('input[name="device-mode"]:checked')?.value;
+  const mode = modeOverride || checkedMode || (deviceSettings.mode === 'service' ? 'service' : 'client');
+  document.querySelectorAll('input[name="device-mode"]').forEach(input => {
+    input.checked = input.value === mode;
+  });
+
+  const availableRooms = getAvailableRooms();
+  const options = ['<option value="">Select a room</option>']
+    .concat(availableRooms.map(room => `<option value="${esc(room.id)}">${esc(room.icon)} ${esc(room.label)}</option>`));
+  deviceRoomSelect.innerHTML = options.join('');
+  deviceRoomSelect.value = availableRooms.some(room => room.id === deviceSettings.roomId) ? deviceSettings.roomId : '';
+  deviceRoomSelect.disabled = mode !== 'client' || availableRooms.length === 0;
+
+  if (mode !== 'client') {
+    deviceSettingsHint.textContent = 'No room is needed when this device is used as a service screen.';
+  } else if (!availableRooms.length) {
+    deviceSettingsHint.textContent = 'No available room in the shared configuration.';
+  } else {
+    deviceSettingsHint.textContent = 'Guests will order directly for this room. Room selection is disabled on the home screen.';
+  }
+}
+
+function openDeviceSettings() {
+  renderDeviceSettings();
+  deviceSettingsOverlay.classList.add('open');
+}
+
+function closeDeviceSettings() {
+  deviceSettingsOverlay.classList.remove('open');
 }
 
 function setConnected(ok) {
@@ -621,12 +918,22 @@ function updateOrderBtn() {
 
 function applyConfig(cfg) {
   config = { ...DEFAULT_CONFIG, ...cfg };
-  if (cfg.projectName) watermark.textContent = cfg.projectName.toUpperCase();
+  watermark.textContent = (config.projectName || DEFAULT_CONFIG.projectName).toUpperCase();
   if (cfg.rooms)  buildRoomsGrid(cfg.rooms);
   if (cfg.drinks) buildDrinksGrid(cfg.drinks);
+  ensureValidDedicatedRoom();
+  refreshWelcomeState();
+  if (deviceSettingsOverlay.classList.contains('open')) renderDeviceSettings();
 }
 
 function enterOrderScreen() {
+  const activeRoom = getActiveRoom();
+  if (!activeRoom) {
+    openDeviceSettings();
+    return;
+  }
+  myRoom = activeRoom.label;
+  myRoomIcon = activeRoom.icon;
   const headerRoom = document.getElementById('order-header-room');
   headerRoom.innerHTML = `<span>${esc(myRoomIcon)}</span><span>${esc(myRoom)}</span>`;
   drinkQty.forEach((_,id) => drinkQty.set(id, 0));
@@ -640,14 +947,54 @@ function enterOrderScreen() {
 }
 
 /* Navigation */
-document.getElementById('btn-order-now').addEventListener('click', () => showScreen(screenRoom));
-document.getElementById('btn-service-dash').addEventListener('click', () => { window.location.href = '/service.html'; });
+primaryActionBtn.addEventListener('click', () => {
+  if (deviceSettings.mode === 'service') {
+    window.location.href = '/service.html';
+    return;
+  }
+  demoMode = false;
+  enterOrderScreen();
+});
+document.getElementById('btn-device-settings').addEventListener('click', openDeviceSettings);
 document.getElementById('btn-demo').addEventListener('click', () => {
-  demoMode = true; showScreen(screenRoom);
+  demoMode = true;
+  if (!getAssignedRoom()) {
+    const firstRoom = getAvailableRooms()[0];
+    if (firstRoom) {
+      myRoom = firstRoom.label;
+      myRoomIcon = firstRoom.icon;
+    }
+  }
+  enterOrderScreen();
 });
 document.getElementById('room-home-btn').addEventListener('click', () => showScreen(screenWelcome));
-document.getElementById('order-back-btn').addEventListener('click', () => showScreen(screenRoom));
+document.getElementById('order-back-btn').addEventListener('click', () => showScreen(screenWelcome));
 document.getElementById('order-home-btn').addEventListener('click', () => showScreen(screenWelcome));
+
+document.querySelectorAll('input[name="device-mode"]').forEach(input => {
+  input.addEventListener('change', () => renderDeviceSettings(input.value));
+});
+document.getElementById('device-settings-cancel').addEventListener('click', closeDeviceSettings);
+deviceSettingsOverlay.addEventListener('click', e => {
+  if (e.target === deviceSettingsOverlay) closeDeviceSettings();
+});
+document.getElementById('device-settings-save').addEventListener('click', () => {
+  const mode = document.querySelector('input[name="device-mode"]:checked')?.value === 'service' ? 'service' : 'client';
+  const availableRooms = getAvailableRooms();
+  let roomId = deviceRoomSelect.value;
+
+  if (mode === 'client') {
+    if (!availableRooms.length) return;
+    if (!availableRooms.some(room => room.id === roomId)) roomId = availableRooms[0].id;
+  } else {
+    roomId = '';
+  }
+
+  saveDeviceSettings({ mode, roomId });
+  refreshWelcomeState();
+  closeDeviceSettings();
+  if (mode === 'service') showScreen(screenWelcome);
+});
 
 orderBtn.addEventListener('click', () => {
   if (demoMode) {
@@ -703,6 +1050,8 @@ function connect() {
 
 buildRoomsGrid(config.rooms);
 buildDrinksGrid(config.drinks);
+ensureValidDedicatedRoom();
+refreshWelcomeState();
 connect();
 </script>
 </body>
