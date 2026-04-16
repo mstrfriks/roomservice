@@ -214,7 +214,7 @@
     }
 
     .order-body { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 20px 20px 0; }
-    .order-content { max-width: 600px; margin: 0 auto; }
+    .order-content { width: min(100%, 600px); margin: 0 auto; }
     .section-label {
       font-size: 10px; font-weight: 600; letter-spacing: 1.5px;
       text-transform: uppercase; color: var(--muted); margin-bottom: 16px;
@@ -231,6 +231,7 @@
       box-shadow: 0 2px 14px rgba(0,0,0,.04);
       transition: background .15s, box-shadow .15s;
       display: flex; flex-direction: column;
+      min-height: 124px;
     }
     .drink-card.selected {
       background: rgba(117,90,38,.07);
@@ -246,29 +247,46 @@
     .drink-card-image img { width: 52px; height: 52px; object-fit: contain; }
 
     .drink-card-bottom {
-      display: flex; align-items: center; gap: 4px; margin-top: 2px;
+      display: flex; align-items: center; gap: 8px; margin-top: auto;
     }
     .drink-name {
       flex: 1; font-size: 12px; font-weight: 500; line-height: 1.3;
       color: var(--text);
     }
     .drink-qty-controls {
-      display: flex; align-items: center; gap: 2px;
+      display: flex; align-items: center; gap: 6px;
       opacity: 0; pointer-events: none; transition: opacity .15s;
     }
     .drink-card.selected .drink-qty-controls { opacity: 1; pointer-events: all; }
     .qty-btn {
-      width: 24px; height: 24px; border-radius: 50%;
+      width: 32px; height: 32px; border-radius: 50%;
       background: var(--surface); border: none;
-      color: var(--text); font-size: 13px;
+      color: var(--text); font-size: 18px;
       display: flex; align-items: center; justify-content: center;
       cursor: pointer; flex-shrink: 0;
     }
     .qty-btn:active { opacity: .6; }
     .qty-num {
       font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 14px; font-weight: 700;
-      color: var(--accent); min-width: 18px; text-align: center;
+      font-size: 18px; font-weight: 700;
+      color: var(--accent); min-width: 24px; text-align: center;
+    }
+
+    @media (min-width: 768px) {
+      .order-body { padding-inline: 32px; }
+      .order-content { width: min(100%, 860px); }
+      .drinks-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; }
+      .drink-card { min-height: 168px; padding: 22px; border-radius: 24px; }
+      .drink-card-image,
+      .drink-card-image img { width: 72px; height: 72px; }
+      .drink-card-image { font-size: 38px; margin-bottom: 12px; }
+      .drink-name { font-size: 17px; line-height: 1.35; }
+      .drink-qty-controls { gap: 10px; }
+      .qty-btn {
+        width: 44px; height: 44px;
+        font-size: 24px;
+      }
+      .qty-num { font-size: 24px; min-width: 30px; }
     }
 
     /* Note field */
@@ -297,6 +315,18 @@
     }
     .btn-place-order:disabled { background: var(--surface); color: var(--muted); cursor: default; }
     .btn-place-order:not(:disabled):active { transform: scale(.98); }
+
+    @media (min-width: 768px) {
+      .note-field-wrap { max-width: calc(860px + 64px); padding-inline: 32px; }
+      .note-field { font-size: 18px; padding-block: 12px; }
+      .order-footer { padding-inline: 32px; }
+      .btn-place-order {
+        max-width: 860px;
+        min-height: 56px;
+        font-size: 18px;
+        border-radius: 10px;
+      }
+    }
 
     /* ── CONFIRM (ConfirmView) ── */
     #screen-confirm {
