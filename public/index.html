@@ -26,11 +26,15 @@
       --surface: #f5f3ef;
       --card:    #ffffff;
       --border:  rgba(0,0,0,0.06);
+      --border-strong: rgba(117,90,38,0.16);
       --accent:  #755a26;
       --accent2: #af8f55;
       --text:    #1c140e;
       --muted:   #4d463a;
+      --muted-strong: #3d352b;
       --radius:  14px;
+      --shadow-soft: 0 10px 30px rgba(48,35,18,.08);
+      --shadow-strong: 0 18px 40px rgba(48,35,18,.14);
     }
 
     html, body {
@@ -42,6 +46,17 @@
       -webkit-tap-highlight-color: transparent;
       -webkit-user-select: none; user-select: none;
       overscroll-behavior: none;
+    }
+    button,
+    a,
+    input,
+    select,
+    textarea {
+      transition: transform .14s ease, box-shadow .18s ease, border-color .18s ease, background-color .18s ease, opacity .18s ease;
+    }
+    :focus-visible {
+      outline: 2px solid rgba(117,90,38,.55);
+      outline-offset: 2px;
     }
     .serif { font-family: 'Cormorant Garamond', Georgia, serif; }
 
@@ -117,12 +132,12 @@
       position: absolute;
       top: calc(50% + 17vmin);
       left: 0; right: 0;
-      font-size: clamp(9px, 1.2vmin, 13px);
-      font-weight: 600;
-      letter-spacing: 0.5em;
+      font-size: clamp(11px, 1.45vmin, 14px);
+      font-weight: 700;
+      letter-spacing: 0.34em;
       text-transform: uppercase;
-      color: var(--muted);
-      text-indent: 0.5em;
+      color: var(--muted-strong);
+      text-indent: 0.34em;
       text-align: center;
     }
 
@@ -137,9 +152,9 @@
     .welcome-device-room {
       max-width: 320px;
       text-align: center;
-      font-size: clamp(12px, 1.3vmin, 14px);
-      color: var(--muted);
-      line-height: 1.45;
+      font-size: clamp(13px, 1.45vmin, 15px);
+      color: var(--muted-strong);
+      line-height: 1.55;
       min-height: 2.9em;
     }
 
@@ -154,15 +169,17 @@
       padding-left: clamp(24px, 4vmin, 40px);
       padding-right: clamp(24px, 4vmin, 40px);
       height: clamp(44px, 5.2vh, 56px);
-      cursor: pointer; transition: transform .12s, opacity .15s;
+      cursor: pointer;
+      box-shadow: 0 18px 36px rgba(0,0,0,.16);
     }
+    .btn-order:hover { transform: translateY(-1px); box-shadow: 0 22px 44px rgba(0,0,0,.2); }
     .btn-order:active { transform: scale(.96); }
 
     .btn-service {
       background: none; border: none; cursor: pointer;
-      font-size: clamp(12px, 1.4vmin, 15px);
-      font-weight: 500;
-      color: var(--muted); opacity: 0.65;
+      font-size: clamp(13px, 1.5vmin, 15px);
+      font-weight: 600;
+      color: var(--muted-strong); opacity: 0.74;
       display: flex; align-items: center; gap: 6px;
     }
     .btn-service:active { opacity: .4; }
@@ -205,8 +222,8 @@
     }
 
     .device-settings-copy {
-      color: var(--muted);
-      font-size: 14px;
+      color: var(--muted-strong);
+      font-size: 15px;
       line-height: 1.45;
       margin-bottom: 20px;
     }
@@ -310,10 +327,10 @@
     .glass-header {
       display: flex; justify-content: center;
       padding: 14px 20px;
-      background: rgba(251,249,245,0.72);
+      background: rgba(251,249,245,0.78);
       backdrop-filter: blur(20px) saturate(180%);
       -webkit-backdrop-filter: blur(20px) saturate(180%);
-      border-bottom: 1px solid var(--border);
+      border-bottom: 1px solid rgba(117,90,38,.10);
       flex-shrink: 0;
     }
     .glass-header-inner {
@@ -353,19 +370,20 @@
       margin: 0 auto 18px;
     }
     .action-kicker {
-      font-size: 11px;
+      font-size: 12px;
       font-weight: 800;
-      letter-spacing: 0.18em;
+      letter-spacing: 0.16em;
       text-transform: uppercase;
       color: var(--accent);
       margin-bottom: 8px;
     }
     .action-copy {
       font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 26px;
+      font-size: 29px;
       font-weight: 700;
-      line-height: 1.08;
+      line-height: 1.04;
       color: var(--text);
+      max-width: 14ch;
     }
     .action-grid {
       display: grid;
@@ -375,17 +393,29 @@
       margin: 0 auto;
     }
     .action-card {
-      background: var(--card); border: none;
+      background: linear-gradient(180deg, rgba(255,255,255,.98), rgba(255,252,247,.96));
+      border: 1px solid rgba(117,90,38,.08);
       border-radius: 22px;
       min-height: 140px;
       padding: 22px 18px;
       display: flex; flex-direction: column; align-items: flex-start; justify-content: space-between; gap: 12px;
       cursor: pointer; color: var(--text);
-      box-shadow: 0 2px 16px rgba(0,0,0,.05);
-      transition: transform .1s, box-shadow .1s;
+      box-shadow: var(--shadow-soft);
       text-align: left;
+      position: relative;
+      overflow: hidden;
     }
-    .action-card:active { transform: scale(.98); box-shadow: none; }
+    .action-card::after {
+      content: "";
+      position: absolute;
+      inset: auto 18px 0;
+      height: 3px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, rgba(117,90,38,.92), rgba(175,143,85,.42));
+      opacity: .9;
+    }
+    .action-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-strong); }
+    .action-card:active { transform: scale(.98); box-shadow: 0 8px 24px rgba(48,35,18,.10); }
     .action-card-title {
       font-family: 'Cormorant Garamond', Georgia, serif;
       font-size: 28px;
@@ -394,17 +424,21 @@
       color: var(--text);
     }
     .action-card-copy {
-      font-size: 14px;
-      line-height: 1.45;
-      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.52;
+      color: var(--muted-strong);
       max-width: 28ch;
     }
     .action-card-tag {
       font-size: 11px;
       font-weight: 800;
-      letter-spacing: 0.12em;
+      letter-spacing: 0.1em;
       text-transform: uppercase;
       color: var(--accent);
+      background: rgba(255,255,255,.72);
+      border: 1px solid rgba(117,90,38,.10);
+      border-radius: 999px;
+      padding: 7px 10px;
     }
     .action-card.assistance {
       background:
@@ -457,9 +491,9 @@
       margin-bottom: 8px;
     }
     .service-callout-note {
-      font-size: 14px;
-      line-height: 1.45;
-      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.52;
+      color: var(--muted-strong);
       margin-bottom: 14px;
     }
     .btn-housekeeper {
@@ -483,8 +517,8 @@
       box-shadow: none;
     }
     .section-label {
-      font-size: 10px; font-weight: 600; letter-spacing: 1.5px;
-      text-transform: uppercase; color: var(--muted); margin-bottom: 16px;
+      font-size: 11px; font-weight: 700; letter-spacing: 1.35px;
+      text-transform: uppercase; color: var(--muted-strong); margin-bottom: 16px;
     }
 
     .drinks-grid {
@@ -498,10 +532,10 @@
     }
 
     .drink-card {
-      background: var(--card); border: none; border-radius: 18px;
+      background: linear-gradient(180deg, rgba(255,255,255,.98), rgba(255,252,248,.96));
+      border: 1px solid rgba(117,90,38,.08); border-radius: 18px;
       padding: 14px 16px; cursor: pointer; text-align: left;
-      box-shadow: 0 2px 14px rgba(0,0,0,.04);
-      transition: background .15s, box-shadow .15s;
+      box-shadow: 0 8px 24px rgba(48,35,18,.05);
       display: flex; align-items: center; gap: 12px;
       min-height: 72px;
     }
@@ -511,10 +545,14 @@
       border-radius: 16px;
     }
     .drink-card.selected {
-      background: rgba(117,90,38,.07);
-      box-shadow: none;
+      background:
+        radial-gradient(circle at top left, rgba(215,177,97,.18), transparent 44%),
+        linear-gradient(180deg, rgba(255,248,232,.98), rgba(250,239,211,.98));
+      border-color: rgba(117,90,38,.24);
+      box-shadow: 0 16px 34px rgba(117,90,38,.14);
     }
     .drink-card.unavailable { opacity: .45; cursor: default; pointer-events: none; }
+    .drink-card:hover:not(.unavailable) { transform: translateY(-1px); box-shadow: 0 14px 32px rgba(48,35,18,.08); }
     .drink-card-bottom {
       display: flex; align-items: center; gap: 12px; width: 100%;
     }
@@ -531,7 +569,7 @@
     .drinks-grid.compact .drink-qty-controls { gap: 4px; }
     .qty-btn {
       width: 32px; height: 32px; border-radius: 50%;
-      background: var(--surface); border: none;
+      background: rgba(117,90,38,.10); border: 1px solid rgba(117,90,38,.12);
       color: var(--text); font-size: 18px;
       display: flex; align-items: center; justify-content: center;
       cursor: pointer; flex-shrink: 0;
@@ -606,7 +644,7 @@
       .screen-scroll { padding: 24px; }
       .action-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
       .action-card { min-height: 220px; padding: 24px 20px; }
-      .action-card-title { font-size: 34px; }
+      .action-card-title { font-size: 36px; }
       .action-card-copy { font-size: 15px; }
       .order-body { padding-inline: 24px; }
       .order-content { width: min(100%, 760px); }
@@ -652,9 +690,9 @@
     .note-field {
       width: 100%; background: none; border: none; outline: none;
       font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 15px; color: var(--text);
-      border-bottom: 1px solid rgba(117,90,38,.25);
-      padding: 8px 2px;
+      font-size: 16px; color: var(--text);
+      border-bottom: 1px solid rgba(117,90,38,.32);
+      padding: 10px 2px;
       -webkit-user-select: auto; user-select: auto;
     }
     .note-field::placeholder { color: var(--muted); opacity: .6; }
@@ -663,10 +701,10 @@
     .order-footer { padding: 12px 20px 36px; flex-shrink: 0; display: flex; justify-content: center; }
     .btn-place-order {
       width: 100%; max-width: 600px; padding: 16px 20px;
-      font-size: 16px; font-weight: 600;
+      font-size: 17px; font-weight: 700;
       background: #000; color: #fff;
-      border: none; border-radius: 6px; cursor: pointer;
-      transition: opacity .15s, transform .12s;
+      border: none; border-radius: 12px; cursor: pointer;
+      box-shadow: 0 18px 38px rgba(0,0,0,.18);
     }
     .btn-place-order:disabled { background: var(--surface); color: var(--muted); cursor: default; }
     .btn-place-order:not(:disabled):active { transform: scale(.98); }

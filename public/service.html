@@ -14,21 +14,34 @@
       --surface: #f5f3ef;
       --card:    #ffffff;
       --border:  rgba(0,0,0,0.06);
+      --border-strong: rgba(117,90,38,.16);
       --accent:  #755a26;
       --accent2: #af8f55;
       --text:    #1c140e;
       --muted:   #4d463a;
+      --muted-strong: #3d352b;
       --radius:  14px;
+      --shadow-soft: 0 10px 28px rgba(48,35,18,.08);
+      --shadow-strong: 0 18px 40px rgba(48,35,18,.12);
     }
     html, body { height:100%; background:var(--bg); font-family:-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif; color:var(--text); -webkit-tap-highlight-color:transparent; }
+    button,
+    a,
+    input {
+      transition: transform .14s ease, box-shadow .18s ease, border-color .18s ease, background-color .18s ease, opacity .18s ease;
+    }
+    :focus-visible {
+      outline: 2px solid rgba(117,90,38,.55);
+      outline-offset: 2px;
+    }
 
     /* ── HEADER ── */
     header {
       position:sticky; top:0; z-index:10;
-      background: rgba(251,249,245,0.82);
+      background: rgba(251,249,245,0.88);
       backdrop-filter: blur(20px) saturate(180%);
       -webkit-backdrop-filter: blur(20px) saturate(180%);
-      border-bottom:1px solid var(--border);
+      border-bottom:1px solid rgba(117,90,38,.10);
       padding:14px 20px;
       display:flex; align-items:center; justify-content:space-between;
     }
@@ -73,7 +86,7 @@
     #notif-banner {
       background:rgba(117,90,38,.06); border-bottom:1px solid rgba(117,90,38,.12);
       padding:10px 20px; display:none; align-items:center;
-      justify-content:space-between; gap:12px; font-size:13px; color:var(--muted);
+      justify-content:space-between; gap:12px; font-size:14px; color:var(--muted-strong);
     }
     #notif-banner.visible { display:flex; }
     #notif-banner button {
@@ -82,7 +95,7 @@
     }
 
     /* ── MAIN ── */
-    main { padding:20px 16px 60px; max-width:820px; margin:0 auto; }
+    main { padding:24px 16px 72px; max-width:860px; margin:0 auto; }
 
     .housekeeping-section {
       margin-bottom: 20px;
@@ -103,8 +116,8 @@
       color: var(--text);
     }
     .housekeeping-header p {
-      font-size: 12px;
-      color: var(--muted);
+      font-size: 13px;
+      color: var(--muted-strong);
     }
     .housekeeping-grid {
       display: grid;
@@ -112,15 +125,24 @@
       gap: 10px;
     }
     .housekeeping-card {
-      background: var(--card);
+      background: linear-gradient(180deg, rgba(255,255,255,.98), rgba(255,252,247,.96));
       border-radius: var(--radius);
       padding: 16px 18px;
-      border: 1px solid var(--border);
-      box-shadow: 0 2px 16px rgba(0,0,0,.04);
+      border: 1px solid rgba(117,90,38,.08);
+      box-shadow: var(--shadow-soft);
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 14px;
+      position: relative;
+      overflow: hidden;
+    }
+    .housekeeping-card::before {
+      content: "";
+      position: absolute;
+      inset: 0 auto 0 0;
+      width: 4px;
+      background: linear-gradient(180deg, rgba(117,90,38,.95), rgba(175,143,85,.45));
     }
     .housekeeping-room-name {
       font-size: 15px;
@@ -128,8 +150,8 @@
       color: var(--text);
     }
     .housekeeping-room-copy {
-      font-size: 12px;
-      color: var(--muted);
+      font-size: 13px;
+      color: var(--muted-strong);
       margin-top: 4px;
     }
     .housekeeping-badge {
@@ -175,11 +197,21 @@
 
     /* ── ORDER CARD ── */
     .order-card {
-      background:var(--card); border-radius:var(--radius);
+      background:linear-gradient(180deg, rgba(255,255,255,.98), rgba(255,252,247,.96)); border-radius:18px;
       padding:20px; display:flex; align-items:flex-start; gap:16px;
       animation:slideIn .3s cubic-bezier(.25,.8,.25,1);
       transition:opacity .25s, transform .25s;
-      box-shadow:0 2px 20px rgba(0,0,0,.06);
+      box-shadow:var(--shadow-soft);
+      border: 1px solid rgba(117,90,38,.08);
+      position: relative;
+      overflow: hidden;
+    }
+    .order-card::before {
+      content:"";
+      position:absolute;
+      inset:0 auto 0 0;
+      width:4px;
+      background: linear-gradient(180deg, rgba(117,90,38,.96), rgba(175,143,85,.48));
     }
     .order-card.housekeeper-request {
       background:
@@ -188,12 +220,15 @@
       border: 1px solid rgba(194,77,61,.18);
       box-shadow: 0 12px 28px rgba(194,77,61,.14);
     }
+    .order-card.housekeeper-request::before {
+      background: linear-gradient(180deg, rgba(141,31,31,.96), rgba(194,77,61,.48));
+    }
     @keyframes slideIn { from{opacity:0;transform:translateY(-12px) scale(.97);} to{opacity:1;transform:none;} }
     .order-card.removing { opacity:0; transform:scale(.95); pointer-events:none; }
 
     .order-info { flex:1; min-width:0; }
     .order-room {
-      font-size:10px; font-weight:600; letter-spacing:1.2px;
+      font-size:11px; font-weight:700; letter-spacing:1.2px;
       text-transform:uppercase; color:var(--accent); margin-bottom:4px;
     }
     .order-drink {
@@ -202,9 +237,9 @@
     }
     .order-note {
       font-family:'Cormorant Garamond', Georgia, serif;
-      font-size:13px; font-style:italic; color:var(--muted); margin-top:3px;
+      font-size:14px; font-style:italic; color:var(--muted-strong); margin-top:3px;
     }
-    .order-time { font-size:12px; color:var(--muted); margin-top:4px; letter-spacing:.3px; }
+    .order-time { font-size:13px; color:var(--muted-strong); margin-top:6px; letter-spacing:.2px; }
     .order-pill {
       display: inline-flex;
       align-items: center;
@@ -221,10 +256,10 @@
 
     .ready-btn {
       background:linear-gradient(135deg,#755a26,#af8f55); color:#fff; border:none;
-      border-radius:6px; padding:11px 18px;
+      border-radius:10px; padding:12px 18px;
       font-size:14px; font-weight:700; cursor:pointer;
       white-space:nowrap; flex-shrink:0; margin-top:2px;
-      transition:transform .1s;
+      box-shadow: 0 12px 28px rgba(117,90,38,.18);
     }
     .order-card.housekeeper-request .ready-btn {
       background: linear-gradient(135deg, #8d1f1f, #c24d3d);
@@ -241,10 +276,10 @@
 
     .settings-header {
       position:sticky; top:0;
-      background:rgba(251,249,245,0.82);
+      background:rgba(251,249,245,0.88);
       backdrop-filter:blur(20px) saturate(180%);
       -webkit-backdrop-filter:blur(20px) saturate(180%);
-      border-bottom:1px solid var(--border);
+      border-bottom:1px solid rgba(117,90,38,.10);
       padding:14px 20px; display:flex; align-items:center; justify-content:space-between; z-index:10;
     }
     .settings-header .btn-cancel {
@@ -262,15 +297,16 @@
     .settings-body { padding:24px 16px 16px; max-width:600px; width:100%; margin:0 auto; display:flex; flex-direction:column; gap:28px; }
 
     .settings-section-title {
-      font-size:10px; font-weight:600; letter-spacing:1.5px;
-      text-transform:uppercase; color:var(--muted);
+      font-size:11px; font-weight:700; letter-spacing:1.35px;
+      text-transform:uppercase; color:var(--muted-strong);
       padding:0 4px; margin-bottom:10px;
     }
 
     .settings-list {
       background:var(--card); border-radius:var(--radius);
       overflow:hidden; margin-bottom:10px;
-      box-shadow:0 2px 16px rgba(0,0,0,.04);
+      box-shadow:var(--shadow-soft);
+      border: 1px solid rgba(117,90,38,.08);
     }
     .settings-item {
       background:var(--card); padding:14px 16px;
