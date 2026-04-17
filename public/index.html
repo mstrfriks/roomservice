@@ -657,6 +657,184 @@
       box-shadow: none;
     }
 
+    @media (min-width: 744px) and (max-width: 1023px) {
+      :root { --content-max: 800px; }
+      .welcome-settings {
+        top: 24px;
+        right: 24px;
+      }
+      .welcome-settings-btn {
+        width: 50px;
+        height: 50px;
+      }
+      .welcome-settings-btn .rs-icon {
+        width: 22px;
+        height: 22px;
+      }
+      .welcome-hero {
+        height: min(36vmin, 320px);
+      }
+      .welcome-watermark {
+        font-size: clamp(170px, 20vmin, 220px);
+      }
+      .welcome-bell {
+        width: clamp(220px, 28vmin, 290px);
+        height: clamp(220px, 28vmin, 290px);
+      }
+      .welcome-subtitle {
+        top: calc(50% + 140px);
+        font-size: 15px;
+        letter-spacing: 0.38em;
+      }
+      .welcome-actions {
+        gap: 18px;
+        padding-bottom: 34px;
+      }
+      .welcome-device-room {
+        max-width: 420px;
+        font-size: 18px;
+        min-height: 3.1em;
+      }
+      .btn-order {
+        font-size: 21px;
+        padding-left: 44px;
+        padding-right: 44px;
+        height: 62px;
+      }
+      .btn-service {
+        font-size: 17px;
+        gap: 8px;
+      }
+      .btn-service svg {
+        width: 16px;
+        height: 16px;
+      }
+      .screen-scroll {
+        padding: 24px 24px 32px;
+      }
+      .action-grid {
+        gap: 16px;
+      }
+      .action-card {
+        min-height: 228px;
+        padding: 24px 20px;
+      }
+      .action-card-title {
+        font-size: 38px;
+      }
+      .action-card-copy {
+        font-size: 17px;
+      }
+      .action-card-meta {
+        font-size: 12px;
+      }
+      .order-header {
+        padding-inline: 28px;
+      }
+      .order-title {
+        font-size: 34px;
+      }
+      .order-subtitle {
+        font-size: 18px;
+      }
+      .order-body {
+        padding-inline: 28px;
+      }
+      .drinks-grid {
+        gap: 18px;
+      }
+      .drink-card {
+        min-height: 88px;
+        padding: 18px 20px;
+        border-radius: 22px;
+      }
+      .drink-name {
+        font-size: 19px;
+      }
+      .drink-qty-controls {
+        gap: 10px;
+      }
+      .qty-btn {
+        width: 44px;
+        height: 44px;
+        font-size: 24px;
+      }
+      .qty-num {
+        font-size: 24px;
+        min-width: 30px;
+      }
+      .drinks-grid.compact .drink-card {
+        min-height: 76px;
+        padding: 15px 16px;
+      }
+      .drinks-grid.compact .drink-name {
+        font-size: 16px;
+      }
+      .drinks-grid.compact .qty-btn {
+        width: 34px;
+        height: 34px;
+        font-size: 19px;
+      }
+      .drinks-grid.compact .qty-num {
+        font-size: 18px;
+        min-width: 22px;
+      }
+      .housekeeping-status {
+        font-size: 13px;
+      }
+      .housekeeping-choice {
+        min-height: 72px;
+        font-size: 18px;
+      }
+      .confirm-card h2,
+      .ready-card h2 {
+        font-size: 34px;
+      }
+      .confirm-card p,
+      .ready-card p {
+        font-size: 18px;
+      }
+      .confirm-circle {
+        width: 116px;
+        height: 116px;
+      }
+      .confirm-circle .rs-icon {
+        width: 50px;
+        height: 50px;
+      }
+      .ready-card {
+        max-width: 460px;
+      }
+      .ready-check {
+        width: 116px;
+        height: 116px;
+      }
+      .ready-check svg {
+        width: 50px;
+        height: 50px;
+      }
+      .btn-back-home {
+        min-height: 58px;
+        font-size: 18px;
+      }
+      .note-field-wrap {
+        max-width: calc(860px + 64px);
+        padding-inline: 32px;
+      }
+      .note-field {
+        font-size: 19px;
+        padding-block: 13px;
+      }
+      .order-footer {
+        padding-inline: 32px;
+      }
+      .btn-place-order {
+        max-width: 860px;
+        min-height: 60px;
+        font-size: 19px;
+      }
+    }
+
     @media (min-width: 700px) {
       :root { --content-max: 760px; }
       .screen-scroll { padding: 24px; }
@@ -697,6 +875,136 @@
       .drinks-grid.compact .drink-name { font-size: 15px; }
       .drinks-grid.compact .qty-btn { width: 32px; height: 32px; font-size: 18px; }
       .drinks-grid.compact .qty-num { font-size: 18px; min-width: 22px; }
+    }
+
+    @media (orientation: landscape) and (max-height: 800px) {
+      .welcome-hero {
+        height: min(44vh, 340px);
+      }
+      .welcome-watermark {
+        font-size: clamp(182px, 27vh, 250px);
+      }
+      .welcome-bell {
+        width: clamp(235px, 29vh, 320px);
+        height: clamp(235px, 29vh, 320px);
+      }
+      .welcome-subtitle {
+        top: calc(50% + min(23vh, 158px));
+        font-size: 16px;
+        letter-spacing: 0.4em;
+      }
+      .welcome-actions {
+        gap: 20px;
+        padding-bottom: 34px;
+      }
+      .welcome-device-room {
+        max-width: 520px;
+        font-size: 19px;
+      }
+      .btn-order {
+        font-size: 22px;
+        padding-left: 50px;
+        padding-right: 50px;
+        height: 64px;
+      }
+      .btn-service {
+        font-size: 18px;
+      }
+      .screen-scroll {
+        padding: 28px 28px 36px;
+      }
+      .action-grid {
+        gap: 20px;
+      }
+      .action-card {
+        min-height: 244px;
+        padding: 28px 24px;
+      }
+      .action-card-title {
+        font-size: 42px;
+      }
+      .action-card-copy {
+        font-size: 18px;
+      }
+      .action-card-meta {
+        font-size: 12px;
+      }
+      .order-header {
+        padding-inline: 32px;
+      }
+      .order-title {
+        font-size: 36px;
+      }
+      .order-subtitle {
+        font-size: 19px;
+      }
+      .drink-card {
+        min-height: 102px;
+        padding: 20px 22px;
+      }
+      .drink-name {
+        font-size: 21px;
+      }
+      .qty-btn {
+        width: 48px;
+        height: 48px;
+        font-size: 26px;
+      }
+      .qty-num {
+        font-size: 26px;
+        min-width: 32px;
+      }
+      .drinks-grid.compact .drink-card {
+        min-height: 84px;
+        padding: 16px 18px;
+      }
+      .drinks-grid.compact .drink-name {
+        font-size: 17px;
+      }
+      .drinks-grid.compact .qty-btn {
+        width: 36px;
+        height: 36px;
+        font-size: 20px;
+      }
+      .drinks-grid.compact .qty-num {
+        font-size: 19px;
+        min-width: 24px;
+      }
+      .note-field {
+        font-size: 20px;
+      }
+      .btn-place-order {
+        min-height: 62px;
+        font-size: 20px;
+      }
+      .confirm-card h2,
+      .ready-card h2 {
+        font-size: 36px;
+      }
+      .confirm-card p,
+      .ready-card p {
+        font-size: 18px;
+      }
+      .confirm-circle {
+        width: 120px;
+        height: 120px;
+      }
+      .confirm-circle .rs-icon {
+        width: 52px;
+        height: 52px;
+      }
+      .ready-check {
+        width: 120px;
+        height: 120px;
+      }
+      .ready-check svg {
+        width: 52px;
+        height: 52px;
+      }
+      .btn-back-home {
+        min-height: 60px;
+        font-size: 19px;
+      }
     }
 
     /* Note field */
