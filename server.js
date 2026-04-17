@@ -5,6 +5,7 @@ const fs      = require('fs');
 const http    = require('http');
 const WebSocket = require('ws');
 const path    = require('path');
+const { DEFAULT_CONFIG, normalizeConfig } = require(path.join(__dirname, 'public', 'app-config.js'));
 
 const app    = express();
 const server = http.createServer(app);
@@ -18,54 +19,46 @@ if (RENDER_URL) {
   setInterval(() => { fetch(RENDER_URL).catch(() => {}); }, 10 * 60 * 1000);
 }
 
-const orders  = [];
-let   nextId  = 1;
+const ORDERS_PATH = path.join(__dirname, 'orders.json');
+const orders  = loadOrders();
+let   nextId  = orders.reduce((maxId, order) => Math.max(maxId, Number(order.id) || 0), 0) + 1;
 const sockets = new Set();
-const DEFAULT_CONFIG = {
-  projectName: '18 Elysée',
-  rooms: [
-    { id:'master',   icon:'👑',  label:'Master Suite',  available:true },
-    { id:'chambre4', icon:'🛏️', label:'Bedroom 4',      available:true },
-    { id:'chambre3', icon:'🛏️', label:'Bedroom 3',      available:true },
-    { id:'chambre2', icon:'🛏️', label:'Bedroom 2',      available:true },
-    { id:'chambre1', icon:'🛏️', label:'Bedroom 1',      available:true },
-    { id:'office1',  icon:'🖥️', label:'Office 1',       available:true },
-    { id:'office2',  icon:'🖥️', label:'Office 2',       available:true },
-    { id:'dining',   icon:'🍽️', label:'Dining Room',    available:true },
-    { id:'salon',    icon:'🛋️', label:'Living Room',    available:true },
-    { id:'kitchen',  icon:'🍳',  label:'Kitchen',        available:true },
-    { id:'wellness', icon:'🧘',  label:'Wellness',       available:true },
-    { id:'gym',      icon:'🏋️', label:'Gym',            available:true },
-    { id:'pool',     icon:'🏊',  label:'Swimming Pool',  available:true },
-  ],
-  drinks: [
-    { id:'espresso',   icon:'☕', label:'Espresso',      available:true },
-    { id:'flat-white', icon:'☕', label:'Flat White',    available:true },
-    { id:'cappuccino', icon:'🥛', label:'Cappuccino',    available:true },
-    { id:'black-tea',  icon:'🍵', label:'Black Tea',     available:true },
-    { id:'green-tea',  icon:'🍵', label:'Green Tea',     available:true },
-    { id:'hot-choc',   icon:'🍫', label:'Hot Chocolate', available:true },
-    { id:'water',      icon:'💧', label:'Still Water',   available:true },
-    { id:'oj',         icon:'🧃', label:'Orange Juice',  available:true },
-  ],
-  housekeepingStatus: {}
-};
+
 const CONFIG_PATH = path.join(__dirname, 'shared-config.json');
 let   sharedConfig = loadSharedConfig();
 
 const NTFY_TOPIC = process.env.NTFY_TOPIC || '';
 const APP_URL    = process.env.RENDER_EXTERNAL_URL || '';
 
-function normalizeConfig(raw) {
-  const cfg = raw && typeof raw === 'object' ? raw : {};
-  return {
-    projectName: String(cfg.projectName || DEFAULT_CONFIG.projectName).trim() || DEFAULT_CONFIG.projectName,
-    rooms: Array.isArray(cfg.rooms) ? cfg.rooms : DEFAULT_CONFIG.rooms,
-    drinks: Array.isArray(cfg.drinks) ? cfg.drinks : DEFAULT_CONFIG.drinks,
-    housekeepingStatus: cfg.housekeepingStatus && typeof cfg.housekeepingStatus === 'object'
-      ? cfg.housekeepingStatus
-      : {},
-  };
+function logInfo(message, details) {
+  if (details === undefined) {
+    console.log(`[roomservice] ${message}`);
+    return;
+  }
+  console.log(`[roomservice] ${message}`, details);
+}
+
+function logError(message, error) {
+  console.error(`[roomservice] ${message}`, error && error.message ? error.message : error);
+}
+
+function loadOrders() {
+  try {
+    if (!fs.existsSync(ORDERS_PATH)) return [];
+    const raw = JSON.parse(fs.readFileSync(ORDERS_PATH, 'utf8'));
+    return Array.isArray(raw) ? raw.filter(order => order && typeof order === 'object') : [];
+  } catch (error) {
+    logError('Failed to load orders', error);
+    return [];
+  }
+}
+
+function saveOrders() {
+  try {
+    fs.writeFileSync(ORDERS_PATH, JSON.stringify(orders, null, 2));
+  } catch (error) {
+    logError('Failed to save orders', error);
+  }
 }
 
 function loadSharedConfig() {
@@ -73,7 +66,7 @@ function loadSharedConfig() {
     if (!fs.existsSync(CONFIG_PATH)) return normalizeConfig(DEFAULT_CONFIG);
     return normalizeConfig(JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf8')));
   } catch (error) {
-    console.error('Failed to load shared config:', error.message);
+    logError('Failed to load shared config', error);
     return normalizeConfig(DEFAULT_CONFIG);
   }
 }
@@ -82,7 +75,7 @@ function saveSharedConfig(config) {
   try {
     fs.writeFileSync(CONFIG_PATH, JSON.stringify(config, null, 2));
   } catch (error) {
-    console.error('Failed to save shared config:', error.message);
+    logError('Failed to save shared config', error);
   }
 }
 
@@ -99,8 +92,8 @@ function notifyService(order) {
     },
     body: isHousekeeperRequest ? 'A guest is requesting the housekeeper.' : order.drink,
   })
-  .then(r => console.log('ntfy response:', r.status))
-  .catch(e => console.error('ntfy error:', e.message));
+  .then(r => logInfo('ntfy response', r.status))
+  .catch(e => logError('ntfy error', e));
 }
 
 wss.on('connection', (ws) => {
@@ -132,7 +125,7 @@ wss.on('connection', (ws) => {
       saveSharedConfig(sharedConfig);
       broadcast('client', { type: 'config', config: sharedConfig });
       broadcast('service', { type: 'config', config: sharedConfig });
-      console.log('Config updated and broadcast to clients');
+      logInfo('Config updated and broadcast to clients');
       return;
     }
 
@@ -153,7 +146,7 @@ wss.on('connection', (ws) => {
       saveSharedConfig(sharedConfig);
       broadcast('client', { type: 'config', config: sharedConfig });
       broadcast('service', { type: 'config', config: sharedConfig });
-      console.log('Room status updated and broadcast');
+      logInfo('Room status updated and broadcast');
       return;
     }
 
@@ -165,6 +158,7 @@ wss.on('connection', (ws) => {
       const order = { id: nextId++, name, drink, note, at: Date.now(), status: 'pending', kind: 'order' };
       orders.push(order);
       if (orders.length > 500) orders.splice(0, orders.length - 500);
+      saveOrders();
       broadcast('service', { type: 'new_order', order });
       send(ws, { type: 'order_confirmed', orderId: order.id });
       notifyService(order);
@@ -185,6 +179,7 @@ wss.on('connection', (ws) => {
       };
       orders.push(order);
       if (orders.length > 500) orders.splice(0, orders.length - 500);
+      saveOrders();
       broadcast('service', { type: 'new_order', order });
       notifyService(order);
       return;
@@ -194,6 +189,7 @@ wss.on('connection', (ws) => {
       const order = orders.find(o => o.id === msg.orderId && o.status === 'pending');
       if (!order) return;
       order.status = 'done';
+      saveOrders();
       broadcast('client',  { type: 'order_ready',   orderId: order.id });
       broadcast('service', { type: 'order_removed', orderId: order.id });
     }
@@ -215,4 +211,4 @@ function broadcast(role, msg) {
 }
 
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => console.log(`Café server → http://localhost:${PORT}`));
+server.listen(PORT, () => logInfo(`Cafe server -> http://localhost:${PORT}`));

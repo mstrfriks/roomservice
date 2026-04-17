@@ -57,6 +57,9 @@
       box-shadow:0 1px 4px rgba(0,0,0,.08); transition:opacity .12s;
     }
     .icon-btn:active { opacity:.6; }
+    .rs-icon { display:inline-flex; align-items:center; justify-content:center; }
+    .rs-icon svg { width:100%; height:100%; }
+    .icon-btn .rs-icon { width:17px; height:17px; }
 
     .conn-dot {
       width:8px; height:8px; border-radius:50%;
@@ -188,7 +191,6 @@
     @keyframes slideIn { from{opacity:0;transform:translateY(-12px) scale(.97);} to{opacity:1;transform:none;} }
     .order-card.removing { opacity:0; transform:scale(.95); pointer-events:none; }
 
-    .drink-icon { font-size:36px; flex-shrink:0; padding-top:2px; }
     .order-info { flex:1; min-width:0; }
     .order-room {
       font-size:10px; font-weight:600; letter-spacing:1.2px;
@@ -276,7 +278,11 @@
       border-bottom:1px solid var(--border);
     }
     .settings-item:last-child { border-bottom:none; }
-    .settings-item-label { flex:1; font-size:15px; font-weight:500; color:var(--text); }
+    .settings-item-label {
+      flex:1; font-size:15px; font-weight:500; color:var(--text);
+      display:flex; align-items:center; gap:10px;
+    }
+    .settings-item-label .rs-icon { width:18px; height:18px; color:var(--accent); flex-shrink:0; }
 
     /* Availability pill */
     .avail-toggle {
@@ -304,10 +310,12 @@
     /* Add form */
     .add-form { display:flex; gap:8px; align-items:center; position:relative; }
     .icon-input {
-      width:52px; border-radius:10px; padding:13px 8px; font-size:20px; text-align:center;
+      width:52px; height:52px; border-radius:10px; padding:0;
       background:var(--card); border:1px solid var(--border); color:var(--text); outline:none; cursor:pointer;
+      display:flex; align-items:center; justify-content:center;
     }
     .icon-input:focus { border-color:var(--accent); }
+    .icon-input .rs-icon { width:22px; height:22px; color:var(--accent); }
     .label-input {
       flex:1; border-radius:10px; padding:13px 14px; font-size:15px;
       background:var(--card); border:1px solid var(--border); color:var(--text); outline:none;
@@ -321,16 +329,21 @@
     }
     .add-btn:active { opacity:.8; }
 
-    /* Emoji picker */
-    .emoji-picker {
+    /* Icon picker */
+    .icon-picker {
       position:absolute; bottom:calc(100% + 8px); left:0;
       background:var(--card); border:1px solid var(--border); border-radius:14px;
       padding:10px; display:none; flex-wrap:wrap; gap:4px; width:264px;
       z-index:400; box-shadow:0 8px 28px rgba(0,0,0,.12);
     }
-    .emoji-picker.open { display:flex; }
-    .emoji-opt { font-size:26px; width:38px; height:38px; border-radius:8px; cursor:pointer; display:flex; align-items:center; justify-content:center; border:none; background:none; }
-    .emoji-opt:active { background:var(--surface); }
+    .icon-picker.open { display:flex; }
+    .icon-opt {
+      width:38px; height:38px; border-radius:8px; cursor:pointer;
+      display:flex; align-items:center; justify-content:center; border:none; background:none;
+      color:var(--text);
+    }
+    .icon-opt .rs-icon { width:20px; height:20px; }
+    .icon-opt:active { background:var(--surface); }
 
     /* Project name input in settings */
     .project-name-input {
@@ -352,8 +365,8 @@
   </div>
   <div class="header-right">
     <div id="badge">0</div>
-    <a href="/" class="icon-btn" title="Home">🏠</a>
-    <button id="settings-btn" class="icon-btn">⚙️</button>
+    <a href="/" class="icon-btn" title="Home"><span data-icon="home"></span></a>
+    <button id="settings-btn" class="icon-btn"><span data-icon="settings"></span></button>
     <div class="conn-dot" id="conn-dot"></div>
   </div>
 </header>
@@ -399,8 +412,8 @@
       <p class="settings-section-title">Rooms / Tables</p>
       <div class="settings-list" id="settings-rooms"></div>
       <div class="add-form">
-        <input class="icon-input" id="new-room-icon" placeholder="🛏️" maxlength="4" readonly>
-        <div class="emoji-picker" id="room-emoji-picker"></div>
+        <button class="icon-input" id="new-room-icon" type="button" aria-label="Choose room icon"></button>
+        <div class="icon-picker" id="room-icon-picker"></div>
         <input class="label-input" id="new-room-label" placeholder="Room name">
         <button class="add-btn" id="add-room-btn">+</button>
       </div>
@@ -411,8 +424,8 @@
       <p class="settings-section-title">Drinks</p>
       <div class="settings-list" id="settings-drinks"></div>
       <div class="add-form">
-        <input class="icon-input" id="new-drink-icon" placeholder="☕" maxlength="4" readonly>
-        <div class="emoji-picker" id="drink-emoji-picker"></div>
+        <button class="icon-input" id="new-drink-icon" type="button" aria-label="Choose drink icon"></button>
+        <div class="icon-picker" id="drink-icon-picker"></div>
         <input class="label-input" id="new-drink-label" placeholder="Drink name">
         <button class="add-btn" id="add-drink-btn">+</button>
       </div>
@@ -421,47 +434,25 @@
   </div>
 </div>
 
+<script src="/icons.js"></script>
+<script src="/app-config.js"></script>
 <script>
 'use strict';
 
 function escHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
-const ROOM_EMOJIS  = ['🛏️','👑','🖥️','🍽️','🛋️','🏋️','🏊','🧘','🍳','🛁','🎮','📚','🎬','🌿','🏡','💪','🎨','🎵','☀️','🌙','🚿','🏠','🪴','🏖️'];
-const DRINK_EMOJIS = ['☕','🍵','🥛','🍫','💧','🧃','🍷','🥤','🧋','🫖','🍶','🧊','🥂','🍹','🫗','🍺','🍌','🍓','🫐'];
+const { normalizeIconName, markup: iconMarkup, hydrate: hydrateIcons } = window.RoomServiceIcons;
+const { DEFAULT_CONFIG, normalizeConfig } = window.RoomServiceConfig;
 
-const DEFAULT_CONFIG = {
-  projectName: '18 Elysée',
-  rooms: [
-    { id:'master',   icon:'👑',  label:'Master Suite',  available:true },
-    { id:'chambre4', icon:'🛏️', label:'Bedroom 4',      available:true },
-    { id:'chambre3', icon:'🛏️', label:'Bedroom 3',      available:true },
-    { id:'chambre2', icon:'🛏️', label:'Bedroom 2',      available:true },
-    { id:'chambre1', icon:'🛏️', label:'Bedroom 1',      available:true },
-    { id:'office1',  icon:'🖥️', label:'Office 1',       available:true },
-    { id:'office2',  icon:'🖥️', label:'Office 2',       available:true },
-    { id:'dining',   icon:'🍽️', label:'Dining Room',    available:true },
-    { id:'salon',    icon:'🛋️', label:'Living Room',    available:true },
-    { id:'kitchen',  icon:'🍳',  label:'Kitchen',        available:true },
-    { id:'wellness', icon:'🧘',  label:'Wellness',       available:true },
-    { id:'gym',      icon:'🏋️', label:'Gym',            available:true },
-    { id:'pool',     icon:'🏊',  label:'Swimming Pool',  available:true },
-  ],
-  drinks: [
-    { id:'espresso',   icon:'☕', label:'Espresso',      available:true },
-    { id:'flat-white', icon:'☕', label:'Flat White',    available:true },
-    { id:'cappuccino', icon:'🥛', label:'Cappuccino',    available:true },
-    { id:'black-tea',  icon:'🍵', label:'Black Tea',     available:true },
-    { id:'green-tea',  icon:'🍵', label:'Green Tea',     available:true },
-    { id:'hot-choc',   icon:'🍫', label:'Hot Chocolate', available:true },
-    { id:'water',      icon:'💧', label:'Still Water',   available:true },
-    { id:'oj',         icon:'🧃', label:'Orange Juice',  available:true },
-  ],
-  housekeepingStatus: {}
-};
+const ROOM_ICONS  = ['bed','crown','monitor','dining','sofa','kitchen','wellness','gym','pool'];
+const DRINK_ICONS = ['coffee','tea','milk','chocolate','water','juice'];
 
 function loadConfig() {
-  try { const s = localStorage.getItem('rs_config'); if (s) return { ...DEFAULT_CONFIG, ...JSON.parse(s) }; } catch {}
-  return { ...DEFAULT_CONFIG };
+  try {
+    const s = localStorage.getItem('rs_config');
+    if (s) return normalizeConfig(JSON.parse(s));
+  } catch {}
+  return normalizeConfig(DEFAULT_CONFIG);
 }
 function saveConfig(cfg) { localStorage.setItem('rs_config', JSON.stringify(cfg)); }
 
@@ -509,7 +500,7 @@ function renderHousekeepingOverview() {
 }
 
 function applyConfig(nextConfig) {
-  config = { ...DEFAULT_CONFIG, ...nextConfig };
+  config = normalizeConfig({ ...config, ...nextConfig });
   saveConfig(config);
   renderHousekeepingOverview();
   if (settingsOverlay.classList.contains('open')) {
@@ -522,21 +513,41 @@ function applyConfig(nextConfig) {
   }
 }
 
-/* ── Emoji picker ── */
-function buildPicker(el, emojis, input) {
+/* ── Icon picker ── */
+function setIconButtonValue(button, iconName) {
+  button.dataset.iconValue = normalizeIconName(iconName, button.dataset.fallbackIcon || 'coffee');
+  button.innerHTML = iconMarkup(button.dataset.iconValue, '', button.getAttribute('aria-label') || '');
+}
+
+function getIconButtonValue(button) {
+  return normalizeIconName(button.dataset.iconValue, button.dataset.fallbackIcon || 'coffee');
+}
+
+function buildPicker(el, iconNames, button) {
   el.innerHTML = '';
-  emojis.forEach(e => {
-    const btn = document.createElement('button'); btn.className='emoji-opt'; btn.type='button'; btn.textContent=e;
-    btn.addEventListener('click', ev => { ev.stopPropagation(); input.value=e; el.classList.remove('open'); });
+  iconNames.forEach(iconName => {
+    const btn = document.createElement('button');
+    btn.className = 'icon-opt';
+    btn.type = 'button';
+    btn.innerHTML = iconMarkup(iconName, '', iconName);
+    btn.addEventListener('click', ev => {
+      ev.stopPropagation();
+      setIconButtonValue(button, iconName);
+      el.classList.remove('open');
+    });
     el.appendChild(btn);
   });
 }
 const roomIconInput  = document.getElementById('new-room-icon');
 const drinkIconInput = document.getElementById('new-drink-icon');
-const roomPicker     = document.getElementById('room-emoji-picker');
-const drinkPicker    = document.getElementById('drink-emoji-picker');
-buildPicker(roomPicker,  ROOM_EMOJIS,  roomIconInput);
-buildPicker(drinkPicker, DRINK_EMOJIS, drinkIconInput);
+const roomPicker     = document.getElementById('room-icon-picker');
+const drinkPicker    = document.getElementById('drink-icon-picker');
+roomIconInput.dataset.fallbackIcon = 'bed';
+drinkIconInput.dataset.fallbackIcon = 'coffee';
+setIconButtonValue(roomIconInput, 'bed');
+setIconButtonValue(drinkIconInput, 'coffee');
+buildPicker(roomPicker,  ROOM_ICONS,  roomIconInput);
+buildPicker(drinkPicker, DRINK_ICONS, drinkIconInput);
 roomIconInput.addEventListener('click',  e => { e.stopPropagation(); drinkPicker.classList.remove('open'); roomPicker.classList.toggle('open'); });
 drinkIconInput.addEventListener('click', e => { e.stopPropagation(); roomPicker.classList.remove('open'); drinkPicker.classList.toggle('open'); });
 document.addEventListener('click', () => { roomPicker.classList.remove('open'); drinkPicker.classList.remove('open'); });
@@ -551,7 +562,7 @@ function renderSettingsRooms() {
     const avail = r.available !== false;
     item.innerHTML=`
       <span class="drag-handle">⠿</span>
-      <span class="settings-item-label">${escHtml(r.icon)} ${escHtml(r.label)}</span>
+      <span class="settings-item-label">${iconMarkup(r.icon, '', r.label)} <span>${escHtml(r.label)}</span></span>
       <button class="avail-toggle ${avail?'available':'unavailable'}" data-i="${i}">${avail?'Available':'Unavailable'}</button>
       <button class="del-btn" data-i="${i}">−</button>
     `;
@@ -565,7 +576,7 @@ function renderSettingsDrinks() {
     const avail = d.available !== false;
     item.innerHTML=`
       <span class="drag-handle">⠿</span>
-      <span class="settings-item-label">${escHtml(d.icon)} ${escHtml(d.label)}</span>
+      <span class="settings-item-label">${iconMarkup(d.icon, '', d.label)} <span>${escHtml(d.label)}</span></span>
       <button class="avail-toggle ${avail?'available':'unavailable'}" data-i="${i}">${avail?'Available':'Unavailable'}</button>
       <button class="del-btn" data-i="${i}">−</button>
     `;
@@ -634,17 +645,19 @@ document.getElementById('settings-btn').addEventListener('click', () => {
 document.getElementById('settings-cancel').addEventListener('click', () => settingsOverlay.classList.remove('open'));
 
 document.getElementById('add-room-btn').addEventListener('click', () => {
-  const icon=roomIconInput.value.trim()||'🛏️';
+  const icon = getIconButtonValue(roomIconInput);
   const label=document.getElementById('new-room-label').value.trim(); if(!label) return;
   editRooms.push({id:'r'+Date.now(),icon,label,available:true});
-  roomIconInput.value=''; document.getElementById('new-room-label').value='';
+  setIconButtonValue(roomIconInput, 'bed');
+  document.getElementById('new-room-label').value='';
   renderSettingsRooms();
 });
 document.getElementById('add-drink-btn').addEventListener('click', () => {
-  const icon=drinkIconInput.value.trim()||'☕';
+  const icon = getIconButtonValue(drinkIconInput);
   const label=document.getElementById('new-drink-label').value.trim(); if(!label) return;
   editDrinks.push({id:'d'+Date.now(),icon,label,available:true});
-  drinkIconInput.value=''; document.getElementById('new-drink-label').value='';
+  setIconButtonValue(drinkIconInput, 'coffee');
+  document.getElementById('new-drink-label').value='';
   renderSettingsDrinks();
 });
 
@@ -684,7 +697,6 @@ const badge=document.getElementById('badge'),empty=document.getElementById('empt
 const orderList=document.getElementById('order-list'),connDot=document.getElementById('conn-dot');
 const ordersMap=new Map();
 
-function emojiFor(drink){const d=config.drinks.find(x=>drink.includes(x.label));return d?d.icon:'☕';}
 function updateBadge(){
   const n=ordersMap.size;
   badge.textContent=n; badge.classList.toggle('visible',n>0);
@@ -700,7 +712,6 @@ function addOrder(order) {
   const noteHtml = order.note ? `<div class="order-note">${escHtml(order.note)}</div>` : '';
   const pillHtml = isHousekeeperRequest ? '<div class="order-pill">Housekeeper requested</div>' : '';
   card.innerHTML=`
-    <span class="drink-icon">${isHousekeeperRequest ? '🔔' : emojiFor(order.drink)}</span>
     <div class="order-info">
       <div class="order-room">${escHtml(order.name)}</div>
       ${pillHtml}
@@ -708,7 +719,7 @@ function addOrder(order) {
       ${noteHtml}
       <div class="order-time" data-ts="${order.at}">${timeLabel(order.at)}</div>
     </div>
-    <button class="ready-btn">${isHousekeeperRequest ? 'Handled' : 'Ready ✓'}</button>
+    <button class="ready-btn">${isHousekeeperRequest ? 'Handled' : 'Ready'}</button>
   `;
   card.querySelector('.ready-btn').addEventListener('click',()=>markReady(order.id));
   orderList.prepend(card); ordersMap.set(order.id,card); updateBadge();
@@ -743,6 +754,7 @@ function connect(){
 
 checkNotif();
 renderHousekeepingOverview();
+hydrateIcons(document);
 connect();
 </script>
 </body>

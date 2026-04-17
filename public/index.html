@@ -71,11 +71,16 @@
       border: 1px solid var(--border);
       background: rgba(255,255,255,0.86);
       color: var(--text);
-      font-size: 18px;
       cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       box-shadow: 0 4px 20px rgba(0,0,0,.06);
     }
     .welcome-settings-btn:active { opacity: .7; }
+    .rs-icon { display: inline-flex; align-items: center; justify-content: center; }
+    .rs-icon svg { width: 100%; height: 100%; }
+    .welcome-settings-btn .rs-icon { width: 18px; height: 18px; }
 
     /* Top spacer */
     .welcome-spacer { flex: 1; }
@@ -325,6 +330,7 @@
       transition: opacity .12s;
     }
     .icon-btn:active { opacity: .6; }
+    .icon-btn .rs-icon { width: 17px; height: 17px; }
     .glass-header h2 {
       font-family: 'Cormorant Garamond', Georgia, serif;
       font-size: 17px; font-weight: 600;
@@ -486,6 +492,10 @@
       grid-template-columns: repeat(1, minmax(0, 1fr));
       gap: 10px;
     }
+    .drinks-grid.compact {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
 
     .drink-card {
       background: var(--card); border: none; border-radius: 18px;
@@ -494,6 +504,11 @@
       transition: background .15s, box-shadow .15s;
       display: flex; align-items: center; gap: 12px;
       min-height: 72px;
+    }
+    .drinks-grid.compact .drink-card {
+      min-height: 64px;
+      padding: 12px 14px;
+      border-radius: 16px;
     }
     .drink-card.selected {
       background: rgba(117,90,38,.07);
@@ -507,11 +522,13 @@
       flex: 1; font-size: 15px; font-weight: 600; line-height: 1.3;
       color: var(--text);
     }
+    .drinks-grid.compact .drink-name { font-size: 14px; line-height: 1.25; }
     .drink-qty-controls {
       display: flex; align-items: center; gap: 6px;
       opacity: 1; pointer-events: all;
       margin-left: auto;
     }
+    .drinks-grid.compact .drink-qty-controls { gap: 4px; }
     .qty-btn {
       width: 32px; height: 32px; border-radius: 50%;
       background: var(--surface); border: none;
@@ -519,12 +536,17 @@
       display: flex; align-items: center; justify-content: center;
       cursor: pointer; flex-shrink: 0;
     }
+    .drinks-grid.compact .qty-btn {
+      width: 28px; height: 28px;
+      font-size: 16px;
+    }
     .qty-btn:active { opacity: .6; }
     .qty-num {
       font-family: 'Cormorant Garamond', Georgia, serif;
       font-size: 18px; font-weight: 700;
       color: var(--accent); min-width: 24px; text-align: center;
     }
+    .drinks-grid.compact .qty-num { font-size: 16px; min-width: 18px; }
 
     .housekeeping-panel {
       border-radius: 22px;
@@ -602,6 +624,7 @@
       }
       .qty-num { font-size: 22px; min-width: 28px; }
       .housekeeping-options { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .drinks-grid.compact { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
     }
 
     @media (min-width: 1024px) {
@@ -615,6 +638,10 @@
         font-size: 24px;
       }
       .qty-num { font-size: 24px; min-width: 30px; }
+      .drinks-grid.compact .drink-card { min-height: 72px; padding: 14px 16px; }
+      .drinks-grid.compact .drink-name { font-size: 15px; }
+      .drinks-grid.compact .qty-btn { width: 32px; height: 32px; font-size: 18px; }
+      .drinks-grid.compact .qty-num { font-size: 18px; min-width: 22px; }
     }
 
     /* Note field */
@@ -672,10 +699,7 @@
       display: flex; align-items: center; justify-content: center;
       margin-bottom: 8px;
     }
-    .confirm-circle span {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 44px; font-weight: 700; color: #fff;
-    }
+    .confirm-circle .rs-icon { width: 44px; height: 44px; color: #fff; }
     .confirm-card h2 {
       font-family: 'Cormorant Garamond', Georgia, serif;
       font-size: 28px; font-weight: 700; color: var(--text);
@@ -698,7 +722,11 @@
       animation: popIn .45s cubic-bezier(.34,1.56,.64,1);
       box-shadow: 0 24px 80px rgba(0,0,0,.12);
     }
-    .ready-emoji { font-size: 72px; display: block; margin-bottom: 16px; }
+    .ready-emoji {
+      width: 72px; height: 72px; display: inline-flex;
+      align-items: center; justify-content: center;
+      margin-bottom: 16px; color: var(--accent);
+    }
     .ready-card h2 {
       font-family: 'Cormorant Garamond', Georgia, serif;
       font-size: 30px; font-weight: 700; color: var(--text); margin-bottom: 8px;
@@ -718,7 +746,7 @@
 <!-- WELCOME -->
 <div id="screen-welcome" class="screen active">
   <div class="welcome-settings">
-    <button class="welcome-settings-btn" id="btn-device-settings" aria-label="Device settings">⚙️</button>
+    <button class="welcome-settings-btn" id="btn-device-settings" aria-label="Device settings"><span data-icon="settings"></span></button>
   </div>
   <div class="welcome-spacer"></div>
 
@@ -739,7 +767,7 @@
 <div id="screen-room" class="screen">
   <div class="glass-header">
     <div class="glass-header-inner">
-      <button class="icon-btn" id="room-home-btn"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6.5L8 2l6 4.5V14a1 1 0 01-1 1H3a1 1 0 01-1-1V6.5z"/><path d="M6 15V9h4v6"/></svg></button>
+      <button class="icon-btn" id="room-home-btn"><span data-icon="home"></span></button>
       <h2 id="action-screen-title">Choose an option</h2>
       <div class="conn-dot" id="conn-dot"></div>
     </div>
@@ -757,9 +785,9 @@
 <div id="screen-order" class="screen">
   <div class="glass-header">
     <div class="glass-header-inner">
-      <button class="icon-btn" id="order-back-btn">‹</button>
+      <button class="icon-btn" id="order-back-btn"><span data-icon="arrow-left"></span></button>
       <div class="order-header-room" id="order-header-room">Order something</div>
-      <button class="icon-btn" id="order-home-btn" style="margin-left:auto"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6.5L8 2l6 4.5V14a1 1 0 01-1 1H3a1 1 0 01-1-1V6.5z"/><path d="M6 15V9h4v6"/></svg></button>
+      <button class="icon-btn" id="order-home-btn" style="margin-left:auto"><span data-icon="home"></span></button>
     </div>
   </div>
   <div class="order-body">
@@ -779,7 +807,7 @@
 <!-- CONFIRM -->
 <div id="screen-confirm" class="screen">
   <div class="confirm-card">
-    <div class="confirm-circle"><span>✓</span></div>
+    <div class="confirm-circle"><span data-icon="check"></span></div>
     <h2>Order placed!</h2>
     <p>Your order is being prepared.</p>
   </div>
@@ -788,7 +816,7 @@
 <!-- READY OVERLAY -->
 <div id="ready-overlay">
   <div class="ready-card">
-    <span class="ready-emoji">☕</span>
+    <span class="ready-emoji" data-icon="coffee"></span>
     <h2>It's ready!</h2>
     <p>Your order is on its way.</p>
     <button class="btn-thankyou" id="dismiss-ready">Thank you!</button>
@@ -833,18 +861,18 @@
 <div id="screen-housekeeper" class="screen">
   <div class="glass-header">
     <div class="glass-header-inner">
-      <button class="icon-btn" id="housekeeper-back-btn">‹</button>
-      <div class="order-header-room">Call the housekeeper</div>
-      <button class="icon-btn" id="housekeeper-home-btn" style="margin-left:auto"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6.5L8 2l6 4.5V14a1 1 0 01-1 1H3a1 1 0 01-1-1V6.5z"/><path d="M6 15V9h4v6"/></svg></button>
+      <button class="icon-btn" id="housekeeper-back-btn"><span data-icon="arrow-left"></span></button>
+      <div class="order-header-room">Call staff</div>
+      <button class="icon-btn" id="housekeeper-home-btn" style="margin-left:auto"><span data-icon="home"></span></button>
     </div>
   </div>
   <div class="order-body">
     <div class="order-content">
       <div class="service-callout">
-        <p class="service-callout-label">Assistance</p>
-        <p class="service-callout-copy">Request the housekeeper</p>
-        <p class="service-callout-note">Use this option if you would like a member of the team to come to your room.</p>
-        <button id="housekeeper-btn" class="btn-housekeeper">Call the housekeeper</button>
+        <p class="service-callout-label">Immediate Assistance</p>
+        <p class="service-callout-copy">Request a team member</p>
+        <p class="service-callout-note">Use this option if you would like someone to come to your room now.</p>
+        <button id="housekeeper-btn" class="btn-housekeeper">Call staff</button>
       </div>
     </div>
   </div>
@@ -854,59 +882,34 @@
 <div id="screen-housekeeping" class="screen">
   <div class="glass-header">
     <div class="glass-header-inner">
-      <button class="icon-btn" id="housekeeping-back-btn">‹</button>
+      <button class="icon-btn" id="housekeeping-back-btn"><span data-icon="arrow-left"></span></button>
       <div class="order-header-room">Room cleaning</div>
-      <button class="icon-btn" id="housekeeping-home-btn" style="margin-left:auto"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6.5L8 2l6 4.5V14a1 1 0 01-1 1H3a1 1 0 01-1-1V6.5z"/><path d="M6 15V9h4v6"/></svg></button>
+      <button class="icon-btn" id="housekeeping-home-btn" style="margin-left:auto"><span data-icon="home"></span></button>
     </div>
   </div>
   <div class="order-body">
     <div class="order-content">
       <div class="housekeeping-panel">
-        <p class="service-callout-label">Housekeeping</p>
+        <p class="service-callout-label">Today's Cleaning</p>
         <p class="service-callout-copy" id="housekeeping-panel-title">Let us know your preference</p>
-        <p class="service-callout-note" id="housekeeping-panel-note">Choose whether you would like this bedroom to be cleaned today.</p>
+        <p class="service-callout-note" id="housekeeping-panel-note">Choose whether you would like this bedroom cleaned during today's service.</p>
         <div class="housekeeping-status" id="housekeeping-status">No choice yet</div>
         <div class="housekeeping-options">
-          <button id="housekeeping-make-btn" class="housekeeping-choice make" type="button">Please make the room</button>
-          <button id="housekeeping-skip-btn" class="housekeeping-choice skip" type="button">Do not make the room</button>
+          <button id="housekeeping-make-btn" class="housekeeping-choice make" type="button">Clean this room today</button>
+          <button id="housekeeping-skip-btn" class="housekeeping-choice skip" type="button">Skip cleaning today</button>
         </div>
       </div>
     </div>
   </div>
 </div>
 
+<script src="/icons.js"></script>
+<script src="/app-config.js"></script>
 <script>
 'use strict';
 
-const DEFAULT_CONFIG = {
-  projectName: '18 Elysée',
-  rooms: [
-    { id:'master',   icon:'👑',  label:'Master Suite',  available:true },
-    { id:'chambre4', icon:'🛏️', label:'Bedroom 4',      available:true },
-    { id:'chambre3', icon:'🛏️', label:'Bedroom 3',      available:true },
-    { id:'chambre2', icon:'🛏️', label:'Bedroom 2',      available:true },
-    { id:'chambre1', icon:'🛏️', label:'Bedroom 1',      available:true },
-    { id:'office1',  icon:'🖥️', label:'Office 1',       available:true },
-    { id:'office2',  icon:'🖥️', label:'Office 2',       available:true },
-    { id:'dining',   icon:'🍽️', label:'Dining Room',    available:true },
-    { id:'salon',    icon:'🛋️', label:'Living Room',    available:true },
-    { id:'kitchen',  icon:'🍳',  label:'Kitchen',        available:true },
-    { id:'wellness', icon:'🧘',  label:'Wellness',       available:true },
-    { id:'gym',      icon:'🏋️', label:'Gym',            available:true },
-    { id:'pool',     icon:'🏊',  label:'Swimming Pool',  available:true },
-  ],
-  drinks: [
-    { id:'espresso',   icon:'☕', label:'Espresso',       available:true },
-    { id:'flat-white', icon:'☕', label:'Flat White',     available:true },
-    { id:'cappuccino', icon:'🥛', label:'Cappuccino',     available:true },
-    { id:'black-tea',  icon:'🍵', label:'Black Tea',      available:true },
-    { id:'green-tea',  icon:'🍵', label:'Green Tea',      available:true },
-    { id:'hot-choc',   icon:'🍫', label:'Hot Chocolate',  available:true },
-    { id:'water',      icon:'💧', label:'Still Water',    available:true },
-    { id:'oj',         icon:'🧃', label:'Orange Juice',   available:true },
-  ],
-  housekeepingStatus: {}
-};
+const { hydrate: hydrateIcons } = window.RoomServiceIcons;
+const { DEFAULT_CONFIG, normalizeConfig } = window.RoomServiceConfig;
 
 let config = DEFAULT_CONFIG;
 const HOUSEKEEPING_ROOM_IDS = new Set(['master', 'chambre1', 'chambre2', 'chambre3', 'chambre4']);
@@ -1047,7 +1050,7 @@ function renderDeviceSettings(modeOverride) {
 
   const availableRooms = getAvailableRooms();
   const options = ['<option value="">Select a room</option>']
-    .concat(availableRooms.map(room => `<option value="${esc(room.id)}">${esc(room.icon)} ${esc(room.label)}</option>`));
+    .concat(availableRooms.map(room => `<option value="${esc(room.id)}">${esc(room.label)}</option>`));
   deviceRoomSelect.innerHTML = options.join('');
   deviceRoomSelect.value = availableRooms.some(room => room.id === deviceSettings.roomId) ? deviceSettings.roomId : '';
   deviceRoomSelect.disabled = mode !== 'client' || availableRooms.length === 0;
@@ -1095,8 +1098,8 @@ function renderActionGrid() {
     {
       className: 'assistance',
       tag: 'Option 2',
-      title: 'Call the housekeeper',
-      copy: 'Send a direct request to the housekeeper for this room.',
+      title: 'Call staff',
+      copy: 'Ask a team member to come to the room now for direct assistance.',
       onClick: () => openHousekeeperScreen(),
     },
   ];
@@ -1106,7 +1109,7 @@ function renderActionGrid() {
       className: 'housekeeping',
       tag: 'Option 3',
       title: 'Room cleaning',
-      copy: 'Choose whether this bedroom should be cleaned today or not.',
+      copy: 'Set today\'s cleaning preference for this bedroom.',
       onClick: () => openHousekeepingScreen(),
     });
   }
@@ -1126,6 +1129,8 @@ function renderActionGrid() {
 }
 
 function buildDrinksGrid(drinks) {
+  const visibleDrinks = drinks.filter(d => d.available !== false);
+  drinksGrid.classList.toggle('compact', visibleDrinks.length > 0 && visibleDrinks.length <= 4);
   drinksGrid.innerHTML = '';
   drinkQty.clear();
   drinks.forEach(d => {
@@ -1185,9 +1190,9 @@ function updateOrderBtn() {
 }
 
 function applyConfig(cfg) {
-  config = { ...DEFAULT_CONFIG, ...cfg };
+  config = normalizeConfig({ ...config, ...cfg });
   watermark.textContent = (config.projectName || DEFAULT_CONFIG.projectName).toUpperCase();
-  if (cfg.drinks) buildDrinksGrid(cfg.drinks);
+  if (cfg.drinks) buildDrinksGrid(config.drinks);
   ensureValidDedicatedRoom();
   refreshWelcomeState();
   renderActionGrid();
@@ -1236,7 +1241,7 @@ function openMenuScreen() {
 function openHousekeeperScreen() {
   const connected = demoMode || connDot.classList.contains('ok');
   housekeeperBtn.disabled = !connected;
-  housekeeperBtn.textContent = 'Call the housekeeper';
+  housekeeperBtn.textContent = 'Call staff';
   showScreen(screenHousekeeper);
 }
 
@@ -1246,7 +1251,7 @@ function renderHousekeepingScreen() {
   if (!enabled) return;
 
   const status = getHousekeepingStatus(room.id);
-  housekeepingPanelTitle.textContent = `Housekeeping for ${room.label}`;
+  housekeepingPanelTitle.textContent = `Cleaning preference for ${room.label}`;
   housekeepingStatus.textContent = housekeepingStatusLabel(status);
   housekeepingMakeBtn.disabled = !demoMode && (!ws || ws.readyState !== WebSocket.OPEN);
   housekeepingSkipBtn.disabled = housekeepingMakeBtn.disabled;
@@ -1355,9 +1360,9 @@ housekeeperBtn.addEventListener('click', () => {
   if (!myRoom) return;
   if (demoMode) {
     housekeeperBtn.disabled = true;
-    housekeeperBtn.textContent = 'Housekeeper notified';
+    housekeeperBtn.textContent = 'Staff notified';
     setTimeout(() => {
-      housekeeperBtn.textContent = 'Call the housekeeper';
+      housekeeperBtn.textContent = 'Call staff';
       updateOrderBtn();
     }, 2200);
     return;
@@ -1365,9 +1370,9 @@ housekeeperBtn.addEventListener('click', () => {
   if (!ws || ws.readyState !== WebSocket.OPEN) return;
   ws.send(JSON.stringify({ type: 'housekeeper_request', name: myRoom }));
   housekeeperBtn.disabled = true;
-  housekeeperBtn.textContent = 'Housekeeper notified';
+  housekeeperBtn.textContent = 'Staff notified';
   setTimeout(() => {
-    housekeeperBtn.textContent = 'Call the housekeeper';
+    housekeeperBtn.textContent = 'Call staff';
     updateOrderBtn();
   }, 2200);
 });
@@ -1408,6 +1413,7 @@ function connect() {
   ws.onerror = () => ws.close();
 }
 
+hydrateIcons(document);
 buildDrinksGrid(config.drinks);
 ensureValidDedicatedRoom();
 refreshWelcomeState();
