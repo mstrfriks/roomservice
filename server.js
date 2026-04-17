@@ -1,6 +1,7 @@
 'use strict';
 
 const express = require('express');
+const fs      = require('fs');
 const http    = require('http');
 const WebSocket = require('ws');
 const path    = require('path');
@@ -20,10 +21,70 @@ if (RENDER_URL) {
 const orders  = [];
 let   nextId  = 1;
 const sockets = new Set();
-let   sharedConfig = null;
+const DEFAULT_CONFIG = {
+  projectName: '18 Elysée',
+  rooms: [
+    { id:'master',   icon:'👑',  label:'Master Suite',  available:true },
+    { id:'chambre4', icon:'🛏️', label:'Bedroom 4',      available:true },
+    { id:'chambre3', icon:'🛏️', label:'Bedroom 3',      available:true },
+    { id:'chambre2', icon:'🛏️', label:'Bedroom 2',      available:true },
+    { id:'chambre1', icon:'🛏️', label:'Bedroom 1',      available:true },
+    { id:'office1',  icon:'🖥️', label:'Office 1',       available:true },
+    { id:'office2',  icon:'🖥️', label:'Office 2',       available:true },
+    { id:'dining',   icon:'🍽️', label:'Dining Room',    available:true },
+    { id:'salon',    icon:'🛋️', label:'Living Room',    available:true },
+    { id:'kitchen',  icon:'🍳',  label:'Kitchen',        available:true },
+    { id:'wellness', icon:'🧘',  label:'Wellness',       available:true },
+    { id:'gym',      icon:'🏋️', label:'Gym',            available:true },
+    { id:'pool',     icon:'🏊',  label:'Swimming Pool',  available:true },
+  ],
+  drinks: [
+    { id:'espresso',   icon:'☕', label:'Espresso',      available:true },
+    { id:'flat-white', icon:'☕', label:'Flat White',    available:true },
+    { id:'cappuccino', icon:'🥛', label:'Cappuccino',    available:true },
+    { id:'black-tea',  icon:'🍵', label:'Black Tea',     available:true },
+    { id:'green-tea',  icon:'🍵', label:'Green Tea',     available:true },
+    { id:'hot-choc',   icon:'🍫', label:'Hot Chocolate', available:true },
+    { id:'water',      icon:'💧', label:'Still Water',   available:true },
+    { id:'oj',         icon:'🧃', label:'Orange Juice',  available:true },
+  ],
+  housekeepingStatus: {}
+};
+const CONFIG_PATH = path.join(__dirname, 'shared-config.json');
+let   sharedConfig = loadSharedConfig();
 
 const NTFY_TOPIC = process.env.NTFY_TOPIC || '';
 const APP_URL    = process.env.RENDER_EXTERNAL_URL || '';
+
+function normalizeConfig(raw) {
+  const cfg = raw && typeof raw === 'object' ? raw : {};
+  return {
+    projectName: String(cfg.projectName || DEFAULT_CONFIG.projectName).trim() || DEFAULT_CONFIG.projectName,
+    rooms: Array.isArray(cfg.rooms) ? cfg.rooms : DEFAULT_CONFIG.rooms,
+    drinks: Array.isArray(cfg.drinks) ? cfg.drinks : DEFAULT_CONFIG.drinks,
+    housekeepingStatus: cfg.housekeepingStatus && typeof cfg.housekeepingStatus === 'object'
+      ? cfg.housekeepingStatus
+      : {},
+  };
+}
+
+function loadSharedConfig() {
+  try {
+    if (!fs.existsSync(CONFIG_PATH)) return normalizeConfig(DEFAULT_CONFIG);
+    return normalizeConfig(JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf8')));
+  } catch (error) {
+    console.error('Failed to load shared config:', error.message);
+    return normalizeConfig(DEFAULT_CONFIG);
+  }
+}
+
+function saveSharedConfig(config) {
+  try {
+    fs.writeFileSync(CONFIG_PATH, JSON.stringify(config, null, 2));
+  } catch (error) {
+    console.error('Failed to save shared config:', error.message);
+  }
+}
 
 function notifyService(order) {
   if (!NTFY_TOPIC) return;
@@ -31,12 +92,12 @@ function notifyService(order) {
   fetch(`https://ntfy.sh/${NTFY_TOPIC}`, {
     method: 'POST',
     headers: {
-      'Title':   isHousekeeperRequest ? `Intendante - ${order.name}` : `Cafe - ${order.name}`,
+      'Title':   isHousekeeperRequest ? `Housekeeper - ${order.name}` : `Cafe - ${order.name}`,
       'Priority':'high',
       'Tags':    isHousekeeperRequest ? 'bell' : 'coffee',
       'Actions': `view, Ouvrir le dashboard, ${APP_URL}/service`,
     },
-    body: isHousekeeperRequest ? 'Une personne demande à voir l’intendante.' : order.drink,
+    body: isHousekeeperRequest ? 'A guest is requesting the housekeeper.' : order.drink,
   })
   .then(r => console.log('ntfy response:', r.status))
   .catch(e => console.error('ntfy error:', e.message));
@@ -55,7 +116,7 @@ wss.on('connection', (ws) => {
       if (msg.role === 'service') {
         send(ws, { type: 'orders', orders: orders.filter(o => o.status === 'pending') });
       }
-      if (msg.role === 'client' && sharedConfig) {
+      if ((msg.role === 'client' || msg.role === 'service') && sharedConfig) {
         send(ws, { type: 'config', config: sharedConfig });
       }
       return;
@@ -63,9 +124,36 @@ wss.on('connection', (ws) => {
 
     if (msg.type === 'update_config') {
       if (ws.role !== 'service') return;
-      sharedConfig = msg.config;
+      sharedConfig = normalizeConfig({
+        ...sharedConfig,
+        ...msg.config,
+        housekeepingStatus: msg.config?.housekeepingStatus ?? sharedConfig.housekeepingStatus,
+      });
+      saveSharedConfig(sharedConfig);
       broadcast('client', { type: 'config', config: sharedConfig });
+      broadcast('service', { type: 'config', config: sharedConfig });
       console.log('Config updated and broadcast to clients');
+      return;
+    }
+
+    if (msg.type === 'update_room_status') {
+      if (ws.role !== 'client') return;
+      const roomId = String(msg.roomId || '').trim();
+      if (!roomId) return;
+
+      const nextStatus = msg.status === 'make' || msg.status === 'skip' ? msg.status : '';
+      const housekeepingStatus = { ...(sharedConfig?.housekeepingStatus || {}) };
+      if (nextStatus) housekeepingStatus[roomId] = nextStatus;
+      else delete housekeepingStatus[roomId];
+
+      sharedConfig = normalizeConfig({
+        ...sharedConfig,
+        housekeepingStatus,
+      });
+      saveSharedConfig(sharedConfig);
+      broadcast('client', { type: 'config', config: sharedConfig });
+      broadcast('service', { type: 'config', config: sharedConfig });
+      console.log('Room status updated and broadcast');
       return;
     }
 
@@ -89,8 +177,8 @@ wss.on('connection', (ws) => {
       const order = {
         id: nextId++,
         name,
-        drink: 'Demande intendante',
-        note: 'La personne souhaite voir l’intendante.',
+        drink: 'Housekeeper request',
+        note: 'The guest would like to see the housekeeper.',
         at: Date.now(),
         status: 'pending',
         kind: 'housekeeper_request',
