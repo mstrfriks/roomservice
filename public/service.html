@@ -522,6 +522,9 @@
     }
     .avail-toggle.available   { background:rgba(117,90,38,.1); color:var(--accent); }
     .avail-toggle.unavailable { background:var(--surface);     color:var(--muted);  }
+    .settings-service-row {
+      justify-content: space-between;
+    }
 
     .del-btn {
       width:28px; height:28px; border-radius:50%;
@@ -637,6 +640,16 @@
       </div>
     </div>
 
+    <div class="settings-section">
+      <p class="settings-section-title">Room Service</p>
+      <div class="settings-list">
+        <div class="settings-item settings-service-row">
+          <span class="settings-item-label">Room service availability</span>
+          <button class="avail-toggle" id="roomservice-availability-toggle" type="button">Available</button>
+        </div>
+      </div>
+    </div>
+
     <!-- Rooms -->
     <div class="settings-section">
       <p class="settings-section-title">Rooms / Tables</p>
@@ -687,7 +700,7 @@ function loadConfig() {
 function saveConfig(cfg) { localStorage.setItem('rs_config', JSON.stringify(cfg)); }
 
 let config = loadConfig();
-let editRooms = [], editDrinks = [], editProjectName = '';
+let editRooms = [], editDrinks = [], editProjectName = '', editRoomServiceAvailable = true;
 
 const HOUSEKEEPING_ROOM_IDS = new Set(['master', 'chambre1', 'chambre2', 'chambre3', 'chambre4']);
 
@@ -737,7 +750,9 @@ function applyConfig(nextConfig) {
     editRooms = JSON.parse(JSON.stringify(config.rooms));
     editDrinks = JSON.parse(JSON.stringify(config.drinks));
     editProjectName = config.projectName || '';
+    editRoomServiceAvailable = config.roomServiceAvailable !== false;
     document.getElementById('settings-project-name').value = editProjectName;
+    renderRoomServiceAvailability();
     renderSettingsRooms();
     renderSettingsDrinks();
   }
@@ -784,6 +799,12 @@ document.addEventListener('click', () => { roomPicker.classList.remove('open'); 
 
 /* ── Settings render ── */
 const settingsOverlay = document.getElementById('settings-overlay');
+const roomServiceAvailabilityToggle = document.getElementById('roomservice-availability-toggle');
+
+function renderRoomServiceAvailability() {
+  roomServiceAvailabilityToggle.textContent = editRoomServiceAvailable ? 'Available' : 'Unavailable';
+  roomServiceAvailabilityToggle.className = `avail-toggle ${editRoomServiceAvailable ? 'available' : 'unavailable'}`;
+}
 
 function renderSettingsRooms() {
   const list = document.getElementById('settings-rooms'); list.innerHTML='';
@@ -868,11 +889,17 @@ document.getElementById('settings-btn').addEventListener('click', () => {
   editRooms=JSON.parse(JSON.stringify(config.rooms));
   editDrinks=JSON.parse(JSON.stringify(config.drinks));
   editProjectName=config.projectName||'';
+  editRoomServiceAvailable=config.roomServiceAvailable !== false;
   document.getElementById('settings-project-name').value=editProjectName;
+  renderRoomServiceAvailability();
   renderSettingsRooms(); renderSettingsDrinks();
   settingsOverlay.classList.add('open');
 });
 document.getElementById('settings-cancel').addEventListener('click', () => settingsOverlay.classList.remove('open'));
+roomServiceAvailabilityToggle.addEventListener('click', () => {
+  editRoomServiceAvailable = !editRoomServiceAvailable;
+  renderRoomServiceAvailability();
+});
 
 document.getElementById('add-room-btn').addEventListener('click', () => {
   const icon = getIconButtonValue(roomIconInput);
@@ -896,6 +923,7 @@ document.getElementById('save-settings').addEventListener('click', () => {
   config = {
     ...config,
     projectName,
+    roomServiceAvailable: editRoomServiceAvailable,
     rooms: editRooms,
     drinks: editDrinks,
     housekeepingStatus: config.housekeepingStatus || {},

@@ -123,8 +123,10 @@
     .welcome-settings {
       position: absolute;
       top: 18px;
-      right: 18px;
+      right: calc(18px + env(safe-area-inset-right, 0px));
       z-index: 2;
+      display: flex;
+      justify-content: flex-end;
     }
 
     .welcome-settings-btn {
@@ -222,6 +224,12 @@
     }
     .btn-order:hover { transform: translateY(-1px); box-shadow: 0 22px 44px rgba(0,0,0,.2); }
     .btn-order:active { transform: scale(.96); }
+    .btn-order:disabled {
+      cursor: default;
+      opacity: .42;
+      transform: none;
+      box-shadow: none;
+    }
 
     .btn-service {
       background: none; border: none; cursor: pointer;
@@ -475,6 +483,15 @@
     }
     .action-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-strong); }
     .action-card:active { transform: scale(.98); box-shadow: 0 8px 24px rgba(48,35,18,.10); }
+    .action-card:disabled {
+      cursor: default;
+      opacity: .46;
+      transform: none;
+      box-shadow: var(--shadow-soft);
+    }
+    .action-card:disabled::after {
+      opacity: .28;
+    }
     .action-card-title {
       font-family: 'Cormorant Garamond', Georgia, serif;
       font-size: 28px;
@@ -708,7 +725,7 @@
       :root { --content-max: 800px; }
       .welcome-settings {
         top: 24px;
-        right: 24px;
+        right: calc(24px + env(safe-area-inset-right, 0px));
       }
       .welcome-settings-btn {
         width: 50px;
@@ -1240,7 +1257,7 @@
     <div class="glass-header-inner">
       <button class="icon-btn" id="room-home-btn"><span data-icon="home"></span></button>
       <h2 id="action-screen-title">Choose an option</h2>
-      <div class="conn-dot" id="conn-dot"></div>
+      <div class="conn-dot" id="conn-dot" hidden></div>
     </div>
   </div>
   <div class="screen-scroll">
@@ -1496,12 +1513,14 @@ function ensureValidDedicatedRoom() {
 function refreshWelcomeState() {
   const assignedRoom = getAssignedRoom();
   const isClient = deviceSettings.mode !== 'service';
+  const serviceAvailable = config.roomServiceAvailable !== false;
 
   primaryActionBtn.textContent = isClient ? config.primaryActionLabel : 'Dashboard';
+  primaryActionBtn.disabled = isClient && !serviceAvailable;
 
   if (isClient) {
     welcomeDeviceRoom.textContent = assignedRoom
-      ? assignedRoom.label
+      ? (serviceAvailable ? assignedRoom.label : 'Room service is currently unavailable.')
       : 'Choose a dedicated room in settings before taking orders.';
   } else {
     welcomeDeviceRoom.textContent = '';
@@ -1559,7 +1578,10 @@ function renderActionGrid() {
       className: 'order',
       tag: 'Option 1',
       title: 'Order something',
-      copy: 'Open the menu and choose from the list of available items.',
+      copy: config.roomServiceAvailable === false
+        ? 'Room service is currently unavailable.'
+        : 'Open the menu and choose from the list of available items.',
+      disabled: config.roomServiceAvailable === false,
       onClick: () => openMenuScreen(),
     },
     {
@@ -1590,7 +1612,8 @@ function renderActionGrid() {
       <div class="action-card-title">${esc(cardData.title)}</div>
       <div class="action-card-copy">${esc(cardData.copy)}</div>
     `;
-    btn.addEventListener('click', cardData.onClick);
+    btn.disabled = !!cardData.disabled;
+    if (!cardData.disabled) btn.addEventListener('click', cardData.onClick);
     actionGrid.appendChild(btn);
   });
 }
@@ -1754,6 +1777,7 @@ primaryActionBtn.addEventListener('click', () => {
     window.location.href = '/service.html';
     return;
   }
+  if (config.roomServiceAvailable === false) return;
   enterActionScreen();
 });
 document.getElementById('btn-device-settings').addEventListener('click', openDeviceSettings);

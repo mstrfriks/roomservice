@@ -17,6 +17,9 @@ assert.equal(legacyConfig.housekeepingStatus['legacy-room'], 'make');
 assert.equal(DEFAULT_CONFIG.primaryActionLabel, 'Room service');
 assert.equal(normalizeConfig({ primaryActionLabel: '  Custom label  ' }).primaryActionLabel, 'Custom label');
 assert.equal(normalizeConfig({ primaryActionLabel: '   ' }).primaryActionLabel, 'Room service');
+assert.equal(DEFAULT_CONFIG.roomServiceAvailable, true);
+assert.equal(normalizeConfig({ roomServiceAvailable: false }).roomServiceAvailable, false);
+assert.equal(normalizeConfig({ roomServiceAvailable: true }).roomServiceAvailable, true);
 assert.ok(Array.isArray(DEFAULT_CONFIG.rooms));
 assert.ok(Array.isArray(DEFAULT_CONFIG.drinks));
 
