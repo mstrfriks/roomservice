@@ -893,7 +893,13 @@ document.getElementById('add-drink-btn').addEventListener('click', () => {
 
 document.getElementById('save-settings').addEventListener('click', () => {
   const projectName = document.getElementById('settings-project-name').value.trim() || config.projectName;
-  config = { projectName, rooms:editRooms, drinks:editDrinks, housekeepingStatus: config.housekeepingStatus || {} };
+  config = {
+    ...config,
+    projectName,
+    rooms: editRooms,
+    drinks: editDrinks,
+    housekeepingStatus: config.housekeepingStatus || {},
+  };
   saveConfig(config);
   if (ws && ws.readyState===WebSocket.OPEN) ws.send(JSON.stringify({type:'update_config',config}));
   settingsOverlay.classList.remove('open');

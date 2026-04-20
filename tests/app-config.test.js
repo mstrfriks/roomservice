@@ -14,6 +14,9 @@ const legacyConfig = normalizeConfig({
 assert.equal(legacyConfig.rooms[0].icon, 'bed');
 assert.equal(legacyConfig.drinks[0].icon, 'coffee');
 assert.equal(legacyConfig.housekeepingStatus['legacy-room'], 'make');
+assert.equal(DEFAULT_CONFIG.primaryActionLabel, 'Room service');
+assert.equal(normalizeConfig({ primaryActionLabel: '  Custom label  ' }).primaryActionLabel, 'Custom label');
+assert.equal(normalizeConfig({ primaryActionLabel: '   ' }).primaryActionLabel, 'Room service');
 assert.ok(Array.isArray(DEFAULT_CONFIG.rooms));
 assert.ok(Array.isArray(DEFAULT_CONFIG.drinks));
 

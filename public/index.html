@@ -65,12 +65,59 @@
     .screen.active { display: flex; }
     @keyframes fadeIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:none; } }
     @keyframes popIn  { from { opacity:0; transform:scale(.82); } to { opacity:1; transform:scale(1); } }
+    @keyframes welcomeGlowDrift {
+      0%   { transform: translate3d(-6%, -4%, 0) scale(1); }
+      50%  { transform: translate3d(4%, 3%, 0) scale(1.08); }
+      100% { transform: translate3d(-4%, 5%, 0) scale(1.02); }
+    }
+    @keyframes welcomeGlowDriftAlt {
+      0%   { transform: translate3d(5%, 4%, 0) scale(1.02); }
+      50%  { transform: translate3d(-5%, -3%, 0) scale(1.1); }
+      100% { transform: translate3d(3%, -5%, 0) scale(1); }
+    }
 
     /* ── WELCOME (ModeSelectionView) ── */
     #screen-welcome {
       background: var(--bg);
       align-items: center;
       position: relative;
+      overflow: hidden;
+      isolation: isolate;
+    }
+    #screen-welcome::before,
+    #screen-welcome::after {
+      content: "";
+      position: absolute;
+      inset: -18%;
+      pointer-events: none;
+      z-index: 0;
+      will-change: transform;
+    }
+    #screen-welcome::before {
+      background:
+        radial-gradient(circle at 24% 28%, rgba(175,143,85,.22), transparent 30%),
+        radial-gradient(circle at 72% 70%, rgba(117,90,38,.16), transparent 34%),
+        linear-gradient(135deg, rgba(255,255,255,.18), rgba(245,235,216,.26), rgba(251,249,245,0));
+      animation: welcomeGlowDrift 22s ease-in-out infinite alternate;
+      opacity: .95;
+    }
+    #screen-welcome::after {
+      background:
+        radial-gradient(circle at 78% 24%, rgba(240,226,193,.45), transparent 28%),
+        radial-gradient(circle at 18% 78%, rgba(117,90,38,.10), transparent 32%);
+      filter: blur(18px);
+      animation: welcomeGlowDriftAlt 26s ease-in-out infinite alternate;
+      opacity: .85;
+    }
+    #screen-welcome > * {
+      position: relative;
+      z-index: 1;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      #screen-welcome::before,
+      #screen-welcome::after {
+        animation: none;
+      }
     }
 
     .welcome-settings {
@@ -709,8 +756,40 @@
         width: 16px;
         height: 16px;
       }
+      .glass-header {
+        padding: 18px 24px;
+      }
+      .glass-header-inner {
+        gap: 14px;
+      }
+      .icon-btn {
+        width: 48px;
+        height: 48px;
+      }
+      .icon-btn .rs-icon {
+        width: 20px;
+        height: 20px;
+      }
+      .order-header-room,
+      .glass-header h2 {
+        font-size: 22px;
+      }
+      .conn-dot {
+        width: 10px;
+        height: 10px;
+      }
       .screen-scroll {
         padding: 24px 24px 32px;
+      }
+      .action-intro {
+        margin-bottom: 24px;
+      }
+      .action-kicker {
+        font-size: 13px;
+      }
+      .action-copy {
+        max-width: 28ch;
+        font-size: 42px;
       }
       .action-grid {
         gap: 16px;
@@ -910,8 +989,40 @@
       .btn-service {
         font-size: 18px;
       }
+      .glass-header {
+        padding: 20px 28px;
+      }
+      .glass-header-inner {
+        gap: 16px;
+      }
+      .icon-btn {
+        width: 52px;
+        height: 52px;
+      }
+      .icon-btn .rs-icon {
+        width: 22px;
+        height: 22px;
+      }
+      .order-header-room,
+      .glass-header h2 {
+        font-size: 24px;
+      }
+      .conn-dot {
+        width: 11px;
+        height: 11px;
+      }
       .screen-scroll {
         padding: 28px 28px 36px;
+      }
+      .action-intro {
+        margin-bottom: 26px;
+      }
+      .action-kicker {
+        font-size: 14px;
+      }
+      .action-copy {
+        max-width: 30ch;
+        font-size: 44px;
       }
       .action-grid {
         gap: 20px;
@@ -1386,7 +1497,7 @@ function refreshWelcomeState() {
   const assignedRoom = getAssignedRoom();
   const isClient = deviceSettings.mode !== 'service';
 
-  primaryActionBtn.textContent = isClient ? 'Order now' : 'Open dashboard';
+  primaryActionBtn.textContent = isClient ? config.primaryActionLabel : 'Dashboard';
 
   if (isClient) {
     welcomeDeviceRoom.textContent = assignedRoom

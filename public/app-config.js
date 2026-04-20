@@ -27,6 +27,7 @@
 
   const DEFAULT_CONFIG = {
     projectName: '18 Elysée',
+    primaryActionLabel: 'Room service',
     rooms: [
       { id:'master',   icon:'crown',    label:'Master Suite',  available:true },
       { id:'chambre4', icon:'bed',      label:'Bedroom 4',     available:true },
@@ -72,6 +73,7 @@
     const cfg = rawConfig && typeof rawConfig === 'object' ? rawConfig : {};
     return {
       projectName: String(cfg.projectName || DEFAULT_CONFIG.projectName).trim() || DEFAULT_CONFIG.projectName,
+      primaryActionLabel: String(cfg.primaryActionLabel || DEFAULT_CONFIG.primaryActionLabel).trim() || DEFAULT_CONFIG.primaryActionLabel,
       rooms: Array.isArray(cfg.rooms) ? normalizeItems(cfg.rooms, 'bed') : DEFAULT_CONFIG.rooms.map(function (room) { return { ...room }; }),
       drinks: Array.isArray(cfg.drinks) ? normalizeItems(cfg.drinks, 'coffee') : DEFAULT_CONFIG.drinks.map(function (drink) { return { ...drink }; }),
       housekeepingStatus: cfg.housekeepingStatus && typeof cfg.housekeepingStatus === 'object'
