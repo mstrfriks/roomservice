@@ -1,0 +1,16 @@
+{
+  "name": "Room Service",
+  "short_name": "Room Service",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#fbf9f5",
+  "theme_color": "#fbf9f5",
+  "icons": [
+    {
+      "src": "/images/app-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
