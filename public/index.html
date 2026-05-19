@@ -1505,14 +1505,14 @@ function getCurrentRoom() {
 }
 
 function ensureValidDedicatedRoom() {
-  const availableRooms = getAvailableRooms();
   if (deviceSettings.mode !== 'client') return;
+  const availableRooms = getAvailableRooms();
   if (!availableRooms.length) {
     if (deviceSettings.roomId) saveDeviceSettings({ ...deviceSettings, roomId: '' });
     return;
   }
-  if (!getAssignedRoom()) {
-    saveDeviceSettings({ ...deviceSettings, roomId: availableRooms[0].id });
+  if (deviceSettings.roomId && !getAssignedRoom()) {
+    saveDeviceSettings({ ...deviceSettings, roomId: '' });
   }
 }
 
@@ -1522,12 +1522,12 @@ function refreshWelcomeState() {
   const serviceAvailable = config.roomServiceAvailable !== false;
 
   primaryActionBtn.textContent = isClient ? config.primaryActionLabel : 'Dashboard';
-  primaryActionBtn.disabled = isClient && !serviceAvailable;
+  primaryActionBtn.disabled = isClient && (!assignedRoom || !serviceAvailable);
 
   if (isClient) {
     welcomeDeviceRoom.textContent = assignedRoom
       ? (serviceAvailable ? assignedRoom.label : 'Room service is currently unavailable.')
-      : 'Choose a dedicated room in settings before taking orders.';
+      : 'Please select your room in settings ↗';
   } else {
     welcomeDeviceRoom.textContent = '';
   }
