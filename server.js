@@ -96,6 +96,28 @@ function notifyService(order) {
   .catch(e => logError('ntfy error', e));
 }
 
+const orderReminders = new Map();
+
+function startOrderReminder(order) {
+  if (orderReminders.has(order.id)) return;
+  const deadline = Date.now() + 2 * 60 * 1000;
+  const iv = setInterval(() => {
+    const still = orders.find(o => o.id === order.id && o.status === 'pending');
+    if (!still || Date.now() >= deadline) {
+      clearInterval(iv);
+      orderReminders.delete(order.id);
+      return;
+    }
+    notifyService(order);
+  }, 10000);
+  orderReminders.set(order.id, iv);
+}
+
+function stopOrderReminder(orderId) {
+  const iv = orderReminders.get(orderId);
+  if (iv) { clearInterval(iv); orderReminders.delete(orderId); }
+}
+
 wss.on('connection', (ws) => {
   ws.role = null;
   sockets.add(ws);
@@ -162,6 +184,7 @@ wss.on('connection', (ws) => {
       broadcast('service', { type: 'new_order', order });
       send(ws, { type: 'order_confirmed', orderId: order.id });
       notifyService(order);
+      startOrderReminder(order);
       return;
     }
 
@@ -182,6 +205,7 @@ wss.on('connection', (ws) => {
       saveOrders();
       broadcast('service', { type: 'new_order', order });
       notifyService(order);
+      startOrderReminder(order);
       return;
     }
 
@@ -189,6 +213,7 @@ wss.on('connection', (ws) => {
       const order = orders.find(o => o.id === msg.orderId && o.status === 'pending');
       if (!order) return;
       order.status = 'done';
+      stopOrderReminder(order.id);
       saveOrders();
       broadcast('client',  { type: 'order_ready',   orderId: order.id });
       broadcast('service', { type: 'order_removed', orderId: order.id });
