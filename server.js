@@ -213,11 +213,8 @@ wss.on('connection', (ws) => {
     if (msg.type === 'acknowledge') {
       const order = orders.find(o => o.id === Number(msg.orderId) && o.status === 'pending');
       if (!order) return;
-      order.status = 'done';
       stopOrderReminder(order.id);
-      saveOrders();
-      broadcast('client',  { type: 'order_ready',   orderId: order.id, kind: order.kind });
-      broadcast('service', { type: 'order_removed', orderId: order.id });
+      broadcast('client', { type: 'order_ready', orderId: order.id, kind: order.kind });
       logInfo('Order acknowledged', order.id);
       return;
     }
