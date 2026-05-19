@@ -100,7 +100,33 @@
     }
 
     /* ── MAIN ── */
-    main { padding:24px 16px 72px; max-width:860px; margin:0 auto; }
+    main { padding:24px 16px 72px; max-width:1100px; margin:0 auto; }
+
+    /* ── DASHBOARD LAYOUT ── */
+    .dashboard-layout {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .dashboard-col-rooms { width: 100%; }
+    .dashboard-col-orders { flex: 1; min-width: 0; }
+
+    @media (min-width: 640px) {
+      .dashboard-layout {
+        flex-direction: row;
+        align-items: flex-start;
+        gap: 24px;
+      }
+      .dashboard-col-rooms {
+        width: 260px;
+        flex-shrink: 0;
+        position: sticky;
+        top: 72px;
+      }
+      .dashboard-col-rooms .housekeeping-grid {
+        grid-template-columns: 1fr;
+      }
+    }
 
     .housekeeping-section {
       margin-bottom: 20px;
@@ -615,18 +641,24 @@
 </div>
 
 <main>
-  <section class="housekeeping-section" id="housekeeping-section">
-    <div class="housekeeping-header">
-      <h2>Bedrooms</h2>
-      <p>Housekeeping preference</p>
+  <div class="dashboard-layout">
+    <div class="dashboard-col-rooms">
+      <section class="housekeeping-section" id="housekeeping-section">
+        <div class="housekeeping-header">
+          <h2>Bedrooms</h2>
+          <p>Housekeeping preference</p>
+        </div>
+        <div class="housekeeping-grid" id="housekeeping-grid"></div>
+      </section>
     </div>
-    <div class="housekeeping-grid" id="housekeeping-grid"></div>
-  </section>
-  <div id="empty">
-    <img src="/images/bell-gold.png" alt="">
-    <p>Waiting for orders…</p>
+    <div class="dashboard-col-orders">
+      <div id="empty">
+        <img src="/images/bell-gold.png" alt="">
+        <p>Waiting for orders…</p>
+      </div>
+      <div id="order-list"></div>
+    </div>
   </div>
-  <div id="order-list"></div>
 </main>
 
 <div id="settings-overlay">
@@ -961,6 +993,22 @@ function checkNotif(){if(!('Notification'in window))return;if(Notification.permi
 document.getElementById('notif-btn').addEventListener('click',()=>{Notification.requestPermission().then(p=>{if(p!=='default')notifBanner.classList.remove('visible');});});
 function sendNotif(o){if(!('Notification'in window)||Notification.permission!=='granted')return;new Notification(`New order — ${o.name}`,{body:o.drink,tag:`order-${o.id}`});}
 
+/* ── Order reminders ── */
+const reminderIntervals=new Map();
+function startOrderReminder(id){
+  if(reminderIntervals.has(id))return;
+  const deadline=Date.now()+2*60*1000;
+  const iv=setInterval(()=>{
+    if(!ordersMap.has(id)||Date.now()>=deadline){clearInterval(iv);reminderIntervals.delete(id);return;}
+    playBeep();
+  },10000);
+  reminderIntervals.set(id,iv);
+}
+function stopOrderReminder(id){
+  const iv=reminderIntervals.get(id);
+  if(iv){clearInterval(iv);reminderIntervals.delete(id);}
+}
+
 /* ── Orders ── */
 const badge=document.getElementById('badge'),empty=document.getElementById('empty');
 const orderList=document.getElementById('order-list'),connDot=document.getElementById('conn-dot');
@@ -992,8 +1040,10 @@ function addOrder(order) {
   `;
   card.querySelector('.ready-btn').addEventListener('click',()=>markReady(order.id));
   orderList.prepend(card); ordersMap.set(order.id,card); updateBadge();
+  startOrderReminder(order.id);
 }
 function removeOrder(id){
+  stopOrderReminder(id);
   const card=ordersMap.get(id);if(!card)return;
   card.classList.add('removing');
   setTimeout(()=>{card.remove();ordersMap.delete(id);updateBadge();},250);
