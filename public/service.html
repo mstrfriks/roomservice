@@ -995,12 +995,14 @@ function sendNotif(o){if(!('Notification'in window)||Notification.permission!=='
 
 /* ── Order reminders ── */
 const reminderIntervals=new Map();
-function startOrderReminder(id){
+function startOrderReminder(order){
+  const id=order.id;
   if(reminderIntervals.has(id))return;
   const deadline=Date.now()+2*60*1000;
   const iv=setInterval(()=>{
     if(!ordersMap.has(id)||Date.now()>=deadline){clearInterval(iv);reminderIntervals.delete(id);return;}
     playBeep();
+    sendNotif(order);
   },10000);
   reminderIntervals.set(id,iv);
 }
@@ -1040,7 +1042,7 @@ function addOrder(order) {
   `;
   card.querySelector('.ready-btn').addEventListener('click',()=>markReady(order.id));
   orderList.prepend(card); ordersMap.set(order.id,card); updateBadge();
-  startOrderReminder(order.id);
+  startOrderReminder(order);
 }
 function removeOrder(id){
   stopOrderReminder(id);
