@@ -1401,7 +1401,7 @@
 <script>
 'use strict';
 
-const { hydrate: hydrateIcons } = window.RoomServiceIcons;
+const { markup: iconMarkup, hydrate: hydrateIcons } = window.RoomServiceIcons;
 const { DEFAULT_CONFIG, normalizeConfig } = window.RoomServiceConfig;
 
 let config = DEFAULT_CONFIG;
@@ -1412,6 +1412,7 @@ let myRoomIcon = '';
 let myRoomId   = '';
 const drinkQty = new Map();
 let pendingOrderId = null;
+let pendingHousekeeperId = null;
 let ws, reconnectDelay = 1000;
 let deviceSettings = loadDeviceSettings();
 
@@ -1850,7 +1851,9 @@ housekeepingSkipBtn.addEventListener('click', () => setRoomStatus('skip'));
 
 document.getElementById('dismiss-ready').addEventListener('click', () => {
   readyOverlay.classList.remove('visible');
-  pendingOrderId = null; enterActionScreen();
+  pendingOrderId = null;
+  pendingHousekeeperId = null;
+  enterActionScreen();
 });
 
 /* WebSocket */
@@ -1869,7 +1872,17 @@ function connect() {
       showScreen(screenConfirm);
       setTimeout(() => { if (screenConfirm.classList.contains('active')) enterActionScreen(); }, 3000);
     }
-    if (msg.type === 'order_ready' && msg.orderId === pendingOrderId) {
+    if (msg.type === 'housekeeper_confirmed') {
+      pendingHousekeeperId = msg.orderId;
+    }
+    if (msg.type === 'order_ready' && (msg.orderId === pendingOrderId || msg.orderId === pendingHousekeeperId)) {
+      const isHousekeeper = msg.orderId === pendingHousekeeperId || msg.kind === 'housekeeper_request';
+      readyOverlay.querySelector('h2').textContent = isHousekeeper ? 'On our way!' : "It's ready!";
+      readyOverlay.querySelector('p').textContent = isHousekeeper
+        ? 'A team member is heading to your room.'
+        : 'Your order is on its way.';
+      const emojiEl = readyOverlay.querySelector('.ready-emoji');
+      emojiEl.innerHTML = iconMarkup(isHousekeeper ? 'bell' : 'coffee', '', '');
       readyOverlay.classList.add('visible');
     }
   };

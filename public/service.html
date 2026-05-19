@@ -1086,11 +1086,6 @@ function removeOrder(id){
 function acknowledgeOrder(id) {
   stopOrderReminder(id);
   if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: 'acknowledge', orderId: id }));
-  const card = ordersMap.get(id);
-  if (card) {
-    const btn = card.querySelector('.ack-btn');
-    if (btn) { btn.textContent = 'Acknowledged ✓'; btn.classList.add('acked'); }
-  }
 }
 function markReady(id){if(!ws||ws.readyState!==WebSocket.OPEN)return;ws.send(JSON.stringify({type:'ready',orderId:id}));}
 setInterval(()=>{document.querySelectorAll('.order-time[data-ts]').forEach(el=>{el.textContent=timeLabel(Number(el.dataset.ts));});},10000);

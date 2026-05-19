@@ -204,15 +204,21 @@ wss.on('connection', (ws) => {
       if (orders.length > 500) orders.splice(0, orders.length - 500);
       saveOrders();
       broadcast('service', { type: 'new_order', order });
+      send(ws, { type: 'housekeeper_confirmed', orderId: order.id });
       notifyService(order);
       startOrderReminder(order);
       return;
     }
 
     if (msg.type === 'acknowledge') {
-      const orderId = Number(msg.orderId);
-      stopOrderReminder(orderId);
-      logInfo('Order acknowledged, reminders stopped', orderId);
+      const order = orders.find(o => o.id === Number(msg.orderId) && o.status === 'pending');
+      if (!order) return;
+      order.status = 'done';
+      stopOrderReminder(order.id);
+      saveOrders();
+      broadcast('client',  { type: 'order_ready',   orderId: order.id, kind: order.kind });
+      broadcast('service', { type: 'order_removed', orderId: order.id });
+      logInfo('Order acknowledged', order.id);
       return;
     }
 
@@ -222,7 +228,6 @@ wss.on('connection', (ws) => {
       order.status = 'done';
       stopOrderReminder(order.id);
       saveOrders();
-      broadcast('client',  { type: 'order_ready',   orderId: order.id });
       broadcast('service', { type: 'order_removed', orderId: order.id });
     }
   });
