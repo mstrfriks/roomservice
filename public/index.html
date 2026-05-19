@@ -1310,7 +1310,7 @@
 <div id="ready-overlay">
   <div class="ready-card">
     <span class="ready-emoji" data-icon="coffee"></span>
-    <h2>It's ready!</h2>
+    <h2>Got it!</h2>
     <p>Your order is on its way.</p>
     <button class="btn-thankyou" id="dismiss-ready">Thank you!</button>
   </div>
@@ -1877,7 +1877,7 @@ function connect() {
     }
     if (msg.type === 'order_ready' && (msg.orderId === pendingOrderId || msg.orderId === pendingHousekeeperId)) {
       const isHousekeeper = msg.orderId === pendingHousekeeperId || msg.kind === 'housekeeper_request';
-      readyOverlay.querySelector('h2').textContent = isHousekeeper ? 'On our way!' : "It's ready!";
+      readyOverlay.querySelector('h2').textContent = isHousekeeper ? 'On our way!' : 'Got it!';
       readyOverlay.querySelector('p').textContent = isHousekeeper
         ? 'A team member is heading to your room.'
         : 'Your order is on its way.';
