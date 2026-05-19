@@ -209,6 +209,13 @@ wss.on('connection', (ws) => {
       return;
     }
 
+    if (msg.type === 'acknowledge') {
+      const orderId = Number(msg.orderId);
+      stopOrderReminder(orderId);
+      logInfo('Order acknowledged, reminders stopped', orderId);
+      return;
+    }
+
     if (msg.type === 'ready') {
       const order = orders.find(o => o.id === msg.orderId && o.status === 'pending');
       if (!order) return;

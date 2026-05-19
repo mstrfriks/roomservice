@@ -280,10 +280,11 @@
       .order-time {
         font-size: 15px;
       }
+      .ack-btn,
       .ready-btn {
         border-radius: 12px;
-        padding: 14px 20px;
-        font-size: 15px;
+        padding: 12px 18px;
+        font-size: 14px;
       }
       .settings-header {
         padding: 18px 24px;
@@ -385,9 +386,10 @@
       .order-time {
         font-size: 15px;
       }
+      .ack-btn,
       .ready-btn {
-        padding: 14px 20px;
-        font-size: 15px;
+        padding: 12px 18px;
+        font-size: 14px;
       }
       .settings-header {
         padding: 18px 24px;
@@ -479,12 +481,39 @@
       color: #8d1f1f;
     }
 
+    .order-card-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      flex-shrink: 0;
+      margin-top: 2px;
+      align-items: stretch;
+    }
+    .ack-btn {
+      background: var(--surface);
+      color: var(--muted-strong);
+      border: 1px solid rgba(117,90,38,.18);
+      border-radius: 10px;
+      padding: 9px 14px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+      text-align: center;
+    }
+    .ack-btn:active { opacity: .7; }
+    .ack-btn.acked {
+      opacity: .45;
+      cursor: default;
+      pointer-events: none;
+    }
     .ready-btn {
       background:linear-gradient(135deg,#755a26,#af8f55); color:#fff; border:none;
-      border-radius:10px; padding:12px 18px;
-      font-size:14px; font-weight:700; cursor:pointer;
-      white-space:nowrap; flex-shrink:0; margin-top:2px;
-      box-shadow: 0 12px 28px rgba(117,90,38,.18);
+      border-radius:10px; padding:9px 14px;
+      font-size:13px; font-weight:700; cursor:pointer;
+      white-space:nowrap;
+      box-shadow: 0 8px 20px rgba(117,90,38,.18);
+      text-align: center;
     }
     .order-card.housekeeper-request .ready-btn {
       background: linear-gradient(135deg, #8d1f1f, #c24d3d);
@@ -1038,8 +1067,12 @@ function addOrder(order) {
       ${noteHtml}
       <div class="order-time" data-ts="${order.at}">${timeLabel(order.at)}</div>
     </div>
-    <button class="ready-btn">${isHousekeeperRequest ? 'Handled' : 'Ready'}</button>
+    <div class="order-card-actions">
+      <button class="ack-btn">Acknowledge</button>
+      <button class="ready-btn">${isHousekeeperRequest ? 'Remove' : 'Remove'}</button>
+    </div>
   `;
+  card.querySelector('.ack-btn').addEventListener('click',()=>acknowledgeOrder(order.id));
   card.querySelector('.ready-btn').addEventListener('click',()=>markReady(order.id));
   orderList.prepend(card); ordersMap.set(order.id,card); updateBadge();
   startOrderReminder(order);
@@ -1049,6 +1082,15 @@ function removeOrder(id){
   const card=ordersMap.get(id);if(!card)return;
   card.classList.add('removing');
   setTimeout(()=>{card.remove();ordersMap.delete(id);updateBadge();},250);
+}
+function acknowledgeOrder(id) {
+  stopOrderReminder(id);
+  if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: 'acknowledge', orderId: id }));
+  const card = ordersMap.get(id);
+  if (card) {
+    const btn = card.querySelector('.ack-btn');
+    if (btn) { btn.textContent = 'Acknowledged ✓'; btn.classList.add('acked'); }
+  }
 }
 function markReady(id){if(!ws||ws.readyState!==WebSocket.OPEN)return;ws.send(JSON.stringify({type:'ready',orderId:id}));}
 setInterval(()=>{document.querySelectorAll('.order-time[data-ts]').forEach(el=>{el.textContent=timeLabel(Number(el.dataset.ts));});},10000);
